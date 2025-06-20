@@ -12,8 +12,8 @@ typedef struct Color {
 static const int imageWidth = 640;
 static const int imageHeight = 480;
 
-static const int horizontalRegions = 8;
-static const int verticalRegions = 4;
+static const int horizontalRegions = 4;
+static const int verticalRegions = 5;
 
 static const uc maxColorOffset = 150;
 
@@ -95,7 +95,13 @@ int main() {
 		}
 		ppmFileStream << "\n";
 		if (row % regionHeight == 0 && row!=0) {
-			colorRegionAtStart++;
+			if (colorRegionAtStart == (sizeof(baseColors) / sizeof(baseColors[0]))-1) {
+				colorRegionAtStart=0;
+			}
+			else {
+				colorRegionAtStart++;
+			}
+			
 		}
 	}
 }
