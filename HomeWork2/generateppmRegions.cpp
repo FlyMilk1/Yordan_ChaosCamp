@@ -1,3 +1,6 @@
+//Yordan Yonchev - Chaos Raytracing course
+//Generation of PPM file with recognisable different color regions with randomly offset colors
+
 #include <fstream>
 #include <random>
 
@@ -56,8 +59,8 @@ int checkDivision(int input, int division) {
 		return input / division;
 	}
 	else {
-	
-		exit(1);
+		
+		return -1;
 	}
 }
 
@@ -69,7 +72,10 @@ int main() {
 
 	int regionWidth = checkDivision(imageWidth, horizontalRegions);
 	int regionHeight = checkDivision(imageHeight, verticalRegions);
-
+	if (regionWidth == -1 || regionHeight == -1) {
+		//print error
+		exit(1);
+	}
 	int colorRegion;
 	int colorRegionAtStart = 0;
 

@@ -1,3 +1,5 @@
+//Yordan Yonchev - Chaos Raytracing course
+//Generation of PPM file with different color triangles with randomly offset colors
 #include <fstream>
 #include <random>
 
