@@ -1,6 +1,7 @@
 //Yordan Yonchev - Chaos Raytracing course
 //Generation of PPM file with colors based on the pixel's normalized ray direction
 #include <fstream>
+#include <cmath>
 typedef unsigned  char uc;
 typedef struct Color {
 	uc r;
@@ -72,7 +73,7 @@ void render() {
 
 }
 }
-void main() {
+int main() {
 	for (int row = 0; row<imageHeight; row++){
 	for (int col = 0; col < imageWidth; col++) {
 		Ray tempRay = generateRay({ 0,0,0 }, col, row);
