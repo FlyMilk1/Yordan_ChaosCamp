@@ -43,15 +43,15 @@ vec3 getRayDirection(int col, int row, int screenZ) {
 	return { x, y, -1.0 };
 }
 void normalizeVector(vec3& vector) {
-	float sqareVector = sqrt(vector.x * vector.x+ vector.y * vector.y+ vector.z * vector.z);
-	vector = { vector.x / abs(sqareVector), vector.y / abs(sqareVector), vector.z / abs(sqareVector) };
+	float sqrtVector = sqrt(vector.x * vector.x+ vector.y * vector.y+ vector.z * vector.z);
+	vector = { vector.x / abs(sqrtVector), vector.y / abs(sqrtVector), vector.z / abs(sqrtVector) };
 }
-Ray generateRay(vec3 origin, int pixelX, int pixelY) {
+Ray generateRay(const vec3& origin, int pixelX, int pixelY) {
 	vec3 dir = getRayDirection(pixelX, pixelY, -1);
 	normalizeVector(dir);
 	return { origin,dir };
 }
-Color getColorFromRay(Ray ray) {
+Color getColorFromRay(const Ray& ray) {
 	Color tempColor;
 	tempColor.r = (ray.dir.x * 127 + 128);
 	tempColor.g = (ray.dir.y * 127 + 128);
