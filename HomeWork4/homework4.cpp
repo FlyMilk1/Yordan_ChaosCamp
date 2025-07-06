@@ -28,7 +28,9 @@ float area(const vec3& a, const vec3& b){
 vec3 normal(const triangle& triangle){
 	vec3 u = {triangle.v1.x - triangle.v0.x, triangle.v1.y - triangle.v0.y, triangle.v1.z - triangle.v0.z};
 	vec3 v = {triangle.v2.x - triangle.v0.x, triangle.v2.y - triangle.v0.y, triangle.v2.z - triangle.v0.z};
-	return crossProduct(u, v);
+	vec3 cross = crossProduct(u, v);
+	normalizeVector(cross);
+	return cross;
 }
 float triangleArea(triangle& triangle){
 	vec3 normalVec = normal(triangle);
@@ -53,7 +55,6 @@ int main(){
 		{0, 1.75, -3}
 	};
 	vec3 normal1 = normal(tr1);
-	normalizeVector(normal1);
 	std::cout << "normal: " << normal1.x << " " << normal1.y << " " << normal1.z << "\n";//0 0 1
 	std::cout << "area: " << triangleArea(tr1) << "\n";//6.125
 	triangle tr2 = {
@@ -62,7 +63,9 @@ int main(){
 		{-1, 0, 1}
 	};
 	vec3 normal2 = normal(tr2);
-	normalizeVector(normal2);
+	
+	
+	
 	std::cout << "normal: " << normal2.x << " " << normal2.y << " " << normal2.z << "\n";//0 -1 0
 	std::cout << "area: " << triangleArea(tr2) << "\n";//2
 	triangle tr3 = {
@@ -71,7 +74,7 @@ int main(){
 		{-1.56, 0.15, -1.92}
 	};
 	vec3 normal3 = normal(tr3);
-	normalizeVector(normal3);
+	
 	std::cout << "normal: " << normal3.x << " " << normal3.y << " " << normal3.z << "\n";//0.75642 0.275748 -0.59312
 	std::cout << "area: " << triangleArea(tr3) << "\n";//6.11862
 }

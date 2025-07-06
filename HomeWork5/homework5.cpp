@@ -2,8 +2,7 @@
 //Raytracing of triangles
 #include <fstream>
 #include <cmath>
-#include <bits/stdc++.h>
-
+#include <vector>
 typedef unsigned  char uc;
 typedef struct Color {
 	uc r, g, b;
