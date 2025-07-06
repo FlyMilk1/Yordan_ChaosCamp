@@ -1,9 +1,12 @@
 //Yordan Yonchev - Chaos Raytracing course
-//Raytracing of triangles with camera movement and animation
+//Raytracing of triangles with camera movement, animation and scene representation
 #include <fstream>
 #include <cmath>
 #include <vector>
 #include <string>
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <fstream>
 
 const double pi = 3.14159265358979323846;
 typedef unsigned  char uc;
@@ -112,12 +115,22 @@ class Camera{
 		Matrix rotationMatrix;
 		vec3 position;
 };
-static const int imageWidth = 640;
-static const int imageHeight = 480;
+
+typedef struct Settings{
+	vec3 bgColor;
+	struct imageSettings{
+		int width;
+		int height;
+	};
+
+};
+Settings settings;
+static int imageWidth = 640;
+static int imageHeight = 480;
 
 static const uc maxColorComponent = 255;
 
-Color framebuffer[imageHeight][imageWidth];
+Color ** framebuffer;
 static const Color red = { 255,0,0 };
 static const Color green = { 0,255,0 };
 static const Color blue = { 0,0,255 };
@@ -307,7 +320,34 @@ void animate(const unsigned int& frames, Camera& camera, int sizeOfTriangles, tr
 		camera.truck({0, truckPerFrame, 0});
 	}
 }
+rapidjson::Document loadDocument(std::string fileName){
+	std::ifstream ifs(fileName);
+	assert(ifs.is_open());
 
+	rapidjson::IStreamWrapper isw(ifs);
+	rapidjson::Document doc;
+	doc.ParseStream(isw);
+	ifs.close();
+	return doc;
+}
+vec3 loadVector(const rapidjson::Value::ConstArray& array){
+	assert(array.Size() == 3);
+	vec3 vec = {
+		static_cast<float>(array[0].GetDouble()),
+		static_cast<float>(array[1].GetDouble()),
+		static_cast<float>(array[2].GetDouble()),
+	};
+	return vec;
+}
+void loadScene(std::string fileName){
+	rapidjson::Document doc = loadDocument(fileName);
+	const rapidjson::Value& settingsVal = doc.FindMember("settings")->value;
+	if(!settingsVal.IsNull() && settingsVal.IsObject()){
+		const rapidjson::Value& bgColorVal =settingsVal.FindMember("background_color")->value;
+		assert(!bgColorVal.IsNull() && bgColorVal.IsArray());
+		settings.bgColor = loadVector(bgColorVal.GetArray());
+	}
+}
 
 int main() {
 	

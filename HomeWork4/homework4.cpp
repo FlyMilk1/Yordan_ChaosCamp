@@ -3,7 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <iostream>
-using namespace std;
+
 typedef struct vec3{
 	float x, y, z;
 }vec3;
@@ -42,10 +42,10 @@ void normalizeVector(vec3& vector) {
 int main(){
 	vec3 crossP1 = crossProduct({3.5, 0, 0},{1.75, 3.5, 0});
 	vec3 crossP2 = crossProduct({3, -3, 1},{4, 9, 3});
-	cout << crossP1.x << " " << crossP1.y << " " << crossP1.z << "\n";//0 0 12.25
-	cout << crossP2.x << " " << crossP2.y << " " << crossP2.z << "\n";//-18 -5 39
-	cout << area({3, -3, 1},{4, 9, 3}) << "\n";//43.2435
-	cout << area({3, -3, 1},{-12, 12, -4}) << "\n";//0
+	std::cout << crossP1.x << " " << crossP1.y << " " << crossP1.z << "\n";//0 0 12.25
+	std::cout << crossP2.x << " " << crossP2.y << " " << crossP2.z << "\n";//-18 -5 39
+	std::cout << area({3, -3, 1},{4, 9, 3}) << "\n";//43.2435
+	std::cout << area({3, -3, 1},{-12, 12, -4}) << "\n";//0
 
 	triangle tr1 = {
 		{-1.75, -1.75, -3},
@@ -54,8 +54,8 @@ int main(){
 	};
 	vec3 normal1 = normal(tr1);
 	normalizeVector(normal1);
-	cout << "normal: " << normal1.x << " " << normal1.y << " " << normal1.z << "\n";//0 0 1
-	cout << "area: " << triangleArea(tr1) << "\n";//6.125
+	std::cout << "normal: " << normal1.x << " " << normal1.y << " " << normal1.z << "\n";//0 0 1
+	std::cout << "area: " << triangleArea(tr1) << "\n";//6.125
 	triangle tr2 = {
 		{0, 0, -1},
 		{1, 0, 1},
@@ -63,8 +63,8 @@ int main(){
 	};
 	vec3 normal2 = normal(tr2);
 	normalizeVector(normal2);
-	cout << "normal: " << normal2.x << " " << normal2.y << " " << normal2.z << "\n";//0 -1 0
-	cout << "area: " << triangleArea(tr2) << "\n";//2
+	std::cout << "normal: " << normal2.x << " " << normal2.y << " " << normal2.z << "\n";//0 -1 0
+	std::cout << "area: " << triangleArea(tr2) << "\n";//2
 	triangle tr3 = {
 		{0.56, 1.11, 1.23},
 		{0.44, -2.368, -0.54},
@@ -72,6 +72,6 @@ int main(){
 	};
 	vec3 normal3 = normal(tr3);
 	normalizeVector(normal3);
-	cout << "normal: " << normal3.x << " " << normal3.y << " " << normal3.z << "\n";//0.75642 0.275748 -0.59312
-	cout << "area: " << triangleArea(tr3) << "\n";//6.11862
+	std::cout << "normal: " << normal3.x << " " << normal3.y << " " << normal3.z << "\n";//0.75642 0.275748 -0.59312
+	std::cout << "area: " << triangleArea(tr3) << "\n";//6.11862
 }

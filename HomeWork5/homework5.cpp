@@ -3,7 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <bits/stdc++.h>
-using namespace std;
+
 typedef unsigned  char uc;
 typedef struct Color {
 	uc r, g, b;
@@ -83,8 +83,8 @@ Ray generateRay(const vec3& origin, int pixelX, int pixelY) {
 }
 Color rayIntersect(const triangle * triangleArray, const int triangleCount, const Ray& ray){
 	Color outputColor = {0,0,0};
-	vector <float> distances;
-	vector <Color> colors;
+	std::vector <float> distances;
+	std::vector <Color> colors;
 	for(int triangleId = 0; triangleId < triangleCount;triangleId++){
 		vec3 currentNormal = normal(triangleArray[triangleId]);
 		
