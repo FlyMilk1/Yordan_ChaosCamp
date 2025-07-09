@@ -38,7 +38,8 @@ vec3 getRayDirection(int col, int row, int screenZ) {
 	x = (2.0 * x) - 1;
 	y = 1.0 - (2.0 * y);
 	//consider Aspect ratio
-	x *= imageWidth / imageHeight;
+	float aspectRatio = (float)imageWidth / (float)imageHeight;
+    x *= aspectRatio;
 
 	return { x, y, -1.0 };
 }
