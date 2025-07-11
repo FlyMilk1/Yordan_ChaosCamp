@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "windows-g++-x86",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "compilerPath": "C:/MinGW/bin/g++.exe",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "${default}",
+      "compilerArgs": [
+        ""
+      ]
+    }
+  ],
+  "version": 4
+}
