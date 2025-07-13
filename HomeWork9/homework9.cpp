@@ -43,9 +43,12 @@ class Material{
 		Material(const vec3& albedo={0,0,0}, const bool& smoothShading=0, const std::string& type="") : albedo(albedo), smoothShading(smoothShading), type(type){};
 		vec3 getAlbedo()const{
 			return albedo;
-		}
+		}	
 		void setAlbedo(const vec3& newAlbedo){
 			albedo=newAlbedo;
+		}
+		std::string getType()const{
+			return type;
 		}
 		bool getSmooth()const{
 			return smoothShading;
@@ -61,6 +64,7 @@ class triangle{
 		vec3 v0, v1, v2;
 		Material material;
 		vec3 normalVec;
+		vec3 v0N, v1N, v2N;
 		void useBaryForColor(const float& u, const float& v){
 			material.setAlbedo({u,v,0});
 		}
@@ -113,12 +117,19 @@ vec3 operator*(const Matrix& mat, const vec3& vec) {
 		mat.m[0][2] * vec.x + mat.m[1][2] * vec.y + mat.m[2][2] * vec.z
 	};
 }
-
 vec3 operator*(const vec3& lhs, const float& rhs) {
        return{
 		lhs.x * rhs,
         lhs.y * rhs,
         lhs.z * rhs,
+	   } ;
+        
+}
+vec3 operator/(const vec3& lhs, const float& rhs) {
+       return{
+		lhs.x / rhs,
+        lhs.y / rhs,
+        lhs.z / rhs,
 	   } ;
         
 }
@@ -143,9 +154,16 @@ vec3 operator-(const vec3& lhs, const vec3& rhs){
 			lhs.z-rhs.z
 		};
 	}
+bool operator==(const vec3& a, const vec3& b) {
+	
+	return std::fabs(a.x - b.x) < EPSILON &&
+	       std::fabs(a.y - b.y) < EPSILON &&
+	       std::fabs(a.z - b.z) < EPSILON;
+}
 class Mesh{
 	public:
 		void addTriangles(std::vector<triangle>& triangleArray) {
+			std::vector<triangle> tempTriangleArray;
 			for(int firstIndex = 0; firstIndex <= triangleVertIndices.size()-2; firstIndex += 3) {
 				
 				triangle tempTriangle(
@@ -156,9 +174,78 @@ class Mesh{
 				);
 				
 				
-				triangleArray.push_back(tempTriangle);
+				tempTriangleArray.push_back(tempTriangle);
 				//std::cout << "Loaded triangle count "+std::to_string(triangleArray.size())+"\n";
 			}
+			if(material.getSmooth()){
+				for(int trId =0; trId < tempTriangleArray.size(); trId++){
+					std::vector<vec3> v0Normals;
+					std::vector<vec3> v1Normals;
+					std::vector<vec3> v2Normals;
+					tempTriangleArray[trId].v0N = {0,0,0};
+					tempTriangleArray[trId].v1N = {0,0,0};
+					tempTriangleArray[trId].v2N = {0,0,0};
+					//v0 normals
+					for(int checkedTrId=0; checkedTrId < tempTriangleArray.size(); checkedTrId++){
+						if(tempTriangleArray[trId].v0 == tempTriangleArray[checkedTrId].v0){
+							v0Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+						if(tempTriangleArray[trId].v0 == tempTriangleArray[checkedTrId].v1){
+							v0Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+						if(tempTriangleArray[trId].v0 == tempTriangleArray[checkedTrId].v2){
+							v0Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+					}
+					//v1 normals
+					for(int checkedTrId=0; checkedTrId < tempTriangleArray.size(); checkedTrId++){
+						if(tempTriangleArray[trId].v1 == tempTriangleArray[checkedTrId].v0){
+							v1Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+						if(tempTriangleArray[trId].v1 == tempTriangleArray[checkedTrId].v1){
+							v1Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+						if(tempTriangleArray[trId].v1 == tempTriangleArray[checkedTrId].v2){
+							v1Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+					}
+					//v2 normals
+					for(int checkedTrId=0; checkedTrId < tempTriangleArray.size(); checkedTrId++){
+						if(tempTriangleArray[trId].v2 == tempTriangleArray[checkedTrId].v0){
+							v2Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+						if(tempTriangleArray[trId].v2 == tempTriangleArray[checkedTrId].v1){
+							v2Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+						if(tempTriangleArray[trId].v2 == tempTriangleArray[checkedTrId].v2){
+							v2Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+						}
+					}
+
+					//v0 normal calculation
+					for(int normId=0; normId < v0Normals.size(); normId++){
+						tempTriangleArray[trId].v0N = tempTriangleArray[trId].v0N + v0Normals[normId];
+					}
+					tempTriangleArray[trId].v0N = tempTriangleArray[trId].v0N / v0Normals.size();
+					//v1 normal calculation
+					for(int normId=0; normId < v1Normals.size(); normId++){
+						tempTriangleArray[trId].v1N = tempTriangleArray[trId].v1N + v1Normals[normId];
+					}
+					tempTriangleArray[trId].v1N = tempTriangleArray[trId].v1N / v1Normals.size();
+					//v2 normal calculation
+					for(int normId=0; normId < v2Normals.size(); normId++){
+						tempTriangleArray[trId].v2N = tempTriangleArray[trId].v2N + v2Normals[normId];
+					}
+					tempTriangleArray[trId].v2N = tempTriangleArray[trId].v2N / v2Normals.size();
+					normalizeVector(tempTriangleArray[trId].v0N);
+					normalizeVector(tempTriangleArray[trId].v1N);
+					normalizeVector(tempTriangleArray[trId].v2N);
+					
+				}
+				std::cout << "Calculated vertex normals for mesh\n";
+			}
+			triangleArray.insert(triangleArray.end(), tempTriangleArray.begin(), tempTriangleArray.end());
+
 		}
 		void setVertices(std::vector<vec3> vecArr){
 			vertices=vecArr;
@@ -464,7 +551,7 @@ bool checkIntersectionShade(const triangle * triangleArray, const int& triangleC
 		}
 		vec3 currentNormal = triangleArray[triangleId].normalVec;
 		float rProj = dot(currentNormal, ray.dir);
-		if(rProj != 0){
+		if (fabs(rProj) < 1e-6f) continue;
 			
 		
 			float rpDist = dot(currentNormal, triangleArray[triangleId].v0 - ray.origin);
@@ -493,13 +580,15 @@ bool checkIntersectionShade(const triangle * triangleArray, const int& triangleC
 				return true;
 			}
 			
-		}
+		
 	}
 	return false;
 }
 vec3 shade(const vec3& p, const Scene& scene, const triangle& checkedTriangle, const triangle * triangleArray, const int triangleCount, const vec3& normal){
 	const std::vector<Light>& lights = scene.lights;
 	float result=0;
+	//std::cout << "Normal: " << normal.x << " " << normal.y << " " << normal.z << "\n";
+
 	if(lights.size() == 0){
 		result = 1;
 	}
@@ -524,8 +613,8 @@ vec3 shade(const vec3& p, const Scene& scene, const triangle& checkedTriangle, c
 	
 
 }
-Color rayIntersect(const triangle * triangleArray, const int triangleCount, const Ray& ray, const Scene& scene){
-	Color outputColor = albedoToRGB(scene.settings.bgColor);
+vec3 rayIntersect(const triangle * triangleArray, const int triangleCount, const Ray& ray, const Scene& scene, int rayDepth=0){
+	vec3 outputColor = scene.settings.bgColor;
 
 	float closestT = __FLT_MAX__;
 	vec3 closestPoint;
@@ -566,20 +655,38 @@ Color rayIntersect(const triangle * triangleArray, const int triangleCount, cons
 		triangle tri = *closestTriangle;
 		vec3 normalForShading;
 		//vec3 shadedBary;
-		if(tri.material.getSmooth()){
+		std::string materialType = tri.material.getType();
+		if(materialType == "diffuse"){
+			if(tri.material.getSmooth()){
 				const vec3 v0v2 = (tri.v2- tri.v0);
 				const vec3 v0v1 = (tri.v1- tri.v0);
 				const float u = length(cross((closestPoint- tri.v0), v0v2))/length(cross(v0v1, v0v2));
 				const float v = length(cross(v0v1,(closestPoint- tri.v0)))/length(cross(v0v1, v0v2));
-				normalForShading = (tri.v1 - tri.normalVec)*u + (tri.v2 - tri.normalVec)*v + (tri.v0-tri.normalVec)*(1-u-v);
-				//shadedBary = {u,v,0};
+				normalForShading = tri.v1N*u + tri.v2N*v + tri.v0N*(1-u-v);
+				normalizeVector(normalForShading);
 				
+				
+				
+			}
+			else{
+				normalForShading = tri.normalVec;
+			}
+			vec3 shaded = shade(closestPoint, scene, *closestTriangle, triangleArray, triangleCount, normalForShading);
+			outputColor = shaded;
 		}
-		else{
-			normalForShading = tri.normalVec;
+		else if(materialType == "reflective"){
+			if(rayDepth<5){
+				vec3 A = ray.dir;
+				vec3 R = A - (tri.normalVec*dot(A, tri.normalVec)) * 2;
+				normalizeVector(R);
+				Ray reflectedRay = {closestPoint+tri.normalVec*EPSILON,R};
+				outputColor = rayIntersect(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
+				outputColor=outputColor*tri.material.getAlbedo();
+			}
 		}
-		vec3 shaded = shade(closestPoint, scene, *closestTriangle, triangleArray, triangleCount, normalForShading);
-		outputColor = albedoToRGB(shaded);
+			
+		
+		
 	}
 
 	return outputColor;
@@ -627,7 +734,7 @@ void CreatePyramid(triangle * triangleArr,const float& size, const vec3& positio
 void rayTrace(const int& row, const int& col, const triangle * triangles, const int& sizeOfTriangles, Camera& camera, const Scene& scene){
 	Ray tempRay = generateRay(camera.getPos(), col, row, camera);
 	
-	framebuffer[row][col] = rayIntersect(triangles, sizeOfTriangles ,tempRay, scene);
+	framebuffer[row][col] = albedoToRGB(rayIntersect(triangles, sizeOfTriangles ,tempRay, scene));
 }
 
 void render(const std::string & fileName, triangle * triangles, int sizeOfTriangles,Camera& camera,const Scene& scene) {
