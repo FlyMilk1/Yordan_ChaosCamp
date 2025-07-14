@@ -1,0 +1,15 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (Homework100.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  MainProgram.cpp
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(46,30): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(75,31): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(94,35): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(194,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(195,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(200,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(201,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(271,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(483,24): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(520,69): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Homework100.vcxproj -> C:\repos\Yordan_ChaosCamp\Homework10\x64\Debug\Homework10.exe
