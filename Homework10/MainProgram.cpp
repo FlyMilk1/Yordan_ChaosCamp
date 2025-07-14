@@ -368,24 +368,44 @@ vec3 rayIntersect(const triangle * triangleArray, const int triangleCount, const
 		else if (materialType == "refractive") {
 			if (rayDepth < 5) {
 				float ior0 = 1.0f;
-				float ior1 = tri.material.getIOR();
+				float ior1 = 1.5f;
 				vec3 N = tri.normalVec;
 				vec3 I = ray.dir;
 				if (dot(I, N) > 0) {
 					std::swap(ior0, ior1);
 					N = N * -1;
-				}
 					
+				}
+				normalizeVector(N); 
 				float eta = ior0 / ior1;
 				float cosA = -dot(I, N);
-				float sin2B = eta * eta * (1.0f - (cosA * cosA));
-				if (sin2B <= 1.0f) {
-					float cosB = sqrt(1.0f - sin2B);
-				vec3 R = (I * eta) + (N * ((eta * cosA) - cosB));
-				normalizeVector(R);
-				Ray refractedRay = { closestPoint+((N*(- 1.0f)) * REFRACTION_BIAS), R};
-				outputColor = rayIntersect(triangleArray, triangleCount, refractedRay, scene, rayDepth+1);
-				outputColor=outputColor*tri.material.getAlbedo();
+				float sin2A = 1.0f - cosA * cosA;
+				if (eta * eta * sin2A < 1.0f) {
+					float sinB = sqrtf(sin2A) * eta;
+					float cosB = sqrtf(1.0f - sinB * sinB);
+					
+					/*vec3 A = (N * -1.0f) * cosB;
+					vec3 C = (I + N * cosA);
+					normalizeVector(C);
+					vec3 B = C * sinB;
+					vec3 R = A + B;
+					normalizeVector(R);*/
+					vec3 R = I *eta + N*(eta * cosA - cosB) ;
+					normalizeVector(R);
+
+					Ray refractedRay = { closestPoint+((N*(- 1.0f)) * REFRACTION_BIAS), R};
+					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N*dot(I, N)*2};
+					vec3 outputColor0 = rayIntersect(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
+					vec3 outputColor1 = rayIntersect(triangleArray, triangleCount, refractedRay, scene, rayDepth+1);
+					float R0 = pow((ior1 - ior0) / (ior1 + ior0), 2);
+					float f = R0 + (1.0f - R0) * pow(1.0f - fabs(dot(I, N)), 5);
+
+					outputColor = outputColor0;//tri.material.getAlbedo()*(outputColor0 * f + outputColor1 * (1.0f - f));
+				}
+				else {
+					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N*dot(I, N)*2};
+					outputColor = rayIntersect(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
+					outputColor=outputColor*tri.material.getAlbedo();
 				}
 									
 			}
