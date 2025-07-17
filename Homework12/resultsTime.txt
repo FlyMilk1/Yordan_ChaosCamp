@@ -1,0 +1,3 @@
+Exectuon time in every stage of optimization:
+1.Debug build: 1491.88 s
+2.Release build: 134.064 s

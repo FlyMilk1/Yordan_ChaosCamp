@@ -15,8 +15,71 @@ void Mesh::addTriangles(std::vector<triangle>& triangleArray) {
     }
 
     if(material.getSmooth()) {
-        // Smooth shading calculations...
-        // (Include your original smooth shading implementation here)
+		for (int trId = 0; trId < tempTriangleArray.size(); trId++) {
+			std::vector<vec3> v0Normals;
+			std::vector<vec3> v1Normals;
+			std::vector<vec3> v2Normals;
+			tempTriangleArray[trId].v0N = { 0,0,0 };
+			tempTriangleArray[trId].v1N = { 0,0,0 };
+			tempTriangleArray[trId].v2N = { 0,0,0 };
+			//v0 normals
+			for (int checkedTrId = 0; checkedTrId < tempTriangleArray.size(); checkedTrId++) {
+				if (tempTriangleArray[trId].v0 == tempTriangleArray[checkedTrId].v0) {
+					v0Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+				if (tempTriangleArray[trId].v0 == tempTriangleArray[checkedTrId].v1) {
+					v0Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+				if (tempTriangleArray[trId].v0 == tempTriangleArray[checkedTrId].v2) {
+					v0Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+			}
+			//v1 normals
+			for (int checkedTrId = 0; checkedTrId < tempTriangleArray.size(); checkedTrId++) {
+				if (tempTriangleArray[trId].v1 == tempTriangleArray[checkedTrId].v0) {
+					v1Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+				if (tempTriangleArray[trId].v1 == tempTriangleArray[checkedTrId].v1) {
+					v1Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+				if (tempTriangleArray[trId].v1 == tempTriangleArray[checkedTrId].v2) {
+					v1Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+			}
+			//v2 normals
+			for (int checkedTrId = 0; checkedTrId < tempTriangleArray.size(); checkedTrId++) {
+				if (tempTriangleArray[trId].v2 == tempTriangleArray[checkedTrId].v0) {
+					v2Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+				if (tempTriangleArray[trId].v2 == tempTriangleArray[checkedTrId].v1) {
+					v2Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+				if (tempTriangleArray[trId].v2 == tempTriangleArray[checkedTrId].v2) {
+					v2Normals.push_back(tempTriangleArray[checkedTrId].normalVec);
+				}
+			}
+
+			//v0 normal calculation
+			for (int normId = 0; normId < v0Normals.size(); normId++) {
+				tempTriangleArray[trId].v0N = tempTriangleArray[trId].v0N + v0Normals[normId];
+			}
+			tempTriangleArray[trId].v0N = tempTriangleArray[trId].v0N / v0Normals.size();
+			//v1 normal calculation
+			for (int normId = 0; normId < v1Normals.size(); normId++) {
+				tempTriangleArray[trId].v1N = tempTriangleArray[trId].v1N + v1Normals[normId];
+			}
+			tempTriangleArray[trId].v1N = tempTriangleArray[trId].v1N / v1Normals.size();
+			//v2 normal calculation
+			for (int normId = 0; normId < v2Normals.size(); normId++) {
+				tempTriangleArray[trId].v2N = tempTriangleArray[trId].v2N + v2Normals[normId];
+			}
+			tempTriangleArray[trId].v2N = tempTriangleArray[trId].v2N / v2Normals.size();
+			normalizeVector(tempTriangleArray[trId].v0N);
+			normalizeVector(tempTriangleArray[trId].v1N);
+			normalizeVector(tempTriangleArray[trId].v2N);
+
+		}
+		std::cout << "Calculated vertex normals for mesh\n";
     }
 
     triangleArray.insert(triangleArray.end(), tempTriangleArray.begin(), tempTriangleArray.end());

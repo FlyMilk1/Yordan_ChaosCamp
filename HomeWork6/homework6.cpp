@@ -291,21 +291,21 @@ void render(const std::string & fileName, triangle * triangles, int sizeOfTriang
 }
 }
 void animate(const unsigned int& frames, Camera& camera, int sizeOfTriangles, triangle * triangles){
-	float startTilt = -45 ;
-	float endTilt = 45;
-	float startTruck = 40;
-	float endTruck = -40;
+	float startTilt = -5 ;
+	float endTilt = 5;
+	float startTruck = 0;
+	float endTruck = 20;
 
 	float tiltPerFrame = (endTilt - startTilt) / frames;
 	float truckPerFrame = (endTruck - startTruck) / frames;
 
-	const std::string frameName = "animation/frame_";
+	const std::string frameName = "animation2/frame_";
 	
 	for(int frame=0; frame<frames; frame++){
 		const std::string frameStr = std::string(frameName + std::to_string(frame) + ".ppm");
 		render(frameStr, triangles, sizeOfTriangles, camera);
-		camera.tilt(tiltPerFrame);
-		camera.truck({0, truckPerFrame, 0});
+		camera.pan(tiltPerFrame);
+		camera.truck({0, 0, truckPerFrame});
 	}
 }
 
@@ -338,7 +338,7 @@ int main() {
 		pyramid[3],
 
 	};
-	animate(72, mainCamera, ((sizeof(triangles))/(sizeof(triangles[0]))), triangles);
+	animate(90, mainCamera, ((sizeof(triangles))/(sizeof(triangles[0]))), triangles);
 	
 }
 

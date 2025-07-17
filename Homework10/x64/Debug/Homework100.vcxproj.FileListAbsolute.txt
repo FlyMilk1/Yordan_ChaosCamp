@@ -1,2 +1,3 @@
 C:\repos\Yordan_ChaosCamp\Homework100\x64\Debug\Homework100.exe
 C:\repos\Yordan_ChaosCamp\Homework10\x64\Debug\Homework10.exe
+D:\repos\Chaos\Homework10\x64\Debug\Homework10.exe

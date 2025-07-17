@@ -1,11 +1,12 @@
 //Yordan Yonchev - Chaos Raytracing course
-//Raytracing of triangles with camera movement, animation, lightning, materials and scene representation
+//Raytracing of triangles with camera movement, animation, lightning, materials, refraction, reflection and scene representation
 
 #include "yordancrt.h"
 const double pi = 3.14159265358979323846;
 const float EPSILON = std::numeric_limits<float>::epsilon();
 const float SHADOW_BIAS = 1e-3;
 const float REFRACTION_BIAS = 1e-3;
+const float REFRACTION_DEPTH = 5;
 typedef unsigned  char uc;
 
 
@@ -51,7 +52,7 @@ class Scene{
 					if (matType == "refractive") {
 						const rapidjson::Value& iorVal = matVal.FindMember("ior")->value;
 						float ior = iorVal.GetFloat();
-						Material tempMat({0,0,0}, smoothShadingVal.GetBool(), matType);
+						Material tempMat({0,0,0}, smoothShadingVal.GetBool(), matType, ior);
 						materials.push_back(tempMat);
 					}
 					else {
@@ -284,7 +285,7 @@ vec3 shade(const vec3& p, const Scene& scene, const triangle& checkedTriangle, c
 	
 
 }
-vec3 rayIntersect(const triangle * triangleArray, const int triangleCount, const Ray& ray, const Scene& scene,int rayDepth=0){
+vec3 getAlbedoRay(const triangle * triangleArray, const int triangleCount, const Ray& ray, const Scene& scene,int rayDepth=0){
 	vec3 outputColor = scene.settings.bgColor;
 
 	float closestT = FLT_MAX;
@@ -349,63 +350,104 @@ vec3 rayIntersect(const triangle * triangleArray, const int triangleCount, const
 
 			vec3 shaded = shade(closestPoint, scene, *closestTriangle, triangleArray, triangleCount, normalForShading);
 			outputColor = shaded;
-			if (outputColor.x == 0 && outputColor.y == 0 && outputColor.z == 0) {
-				//std::cout << normalForShading.x << normalForShading.y << normalForShading.z;
-				std::cout << "Black color at depth " << rayDepth << ", material: " << tri.material.getType() << std::endl;
-			}
+			
 
 		}
 		else if(materialType == "reflective"){
-			if(rayDepth<5){
+			if(rayDepth<REFRACTION_DEPTH){
 				vec3 A = ray.dir;
 				vec3 R = A - (tri.normalVec*dot(A, tri.normalVec)) * 2;
 				normalizeVector(R);
 				Ray reflectedRay = {closestPoint+tri.normalVec*EPSILON,R};
-				outputColor = rayIntersect(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
+				outputColor = getAlbedoRay(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
 				outputColor=outputColor*tri.material.getAlbedo();
 			}
 		}
 		else if (materialType == "refractive") {
-			if (rayDepth < 5) {
+			if (rayDepth < REFRACTION_DEPTH) {
 				float ior0 = 1.0f;
-				float ior1 = 1.5f;
-				vec3 N = tri.normalVec;
+				float ior1 = tri.material.getIOR();
+				vec3 N;
+
+				if (tri.material.getSmooth()) {
+					const vec3 v0v2 = (tri.v2 - tri.v0);
+					const vec3 v0v1 = (tri.v1 - tri.v0);
+					const float u = length(cross((closestPoint - tri.v0), v0v2)) / length(cross(v0v1, v0v2));
+					const float v = length(cross(v0v1, (closestPoint - tri.v0))) / length(cross(v0v1, v0v2));
+					N = tri.v1N * u + tri.v2N * v + tri.v0N * (1 - u - v);
+					
+					
+
+
+				}
+				else {
+					
+					N = tri.normalVec;
+					
+
+				}
+				
 				vec3 I = ray.dir;
-				if (dot(I, N) > 0) {
+				
+				/*normalizeVector(N);
+				normalizeVector(I);*/
+				float dotIN = dot(I, N);
+				if (dotIN > 0) {
 					std::swap(ior0, ior1);
 					N = N * -1;
 					
 				}
-				normalizeVector(N); 
-				float eta = ior0 / ior1;
+				
+				float eta = ior1 / ior0;
+				
 				float cosA = -dot(I, N);
-				float sin2A = 1.0f - cosA * cosA;
-				if (eta * eta * sin2A < 1.0f) {
-					float sinB = sqrtf(sin2A) * eta;
+				/*if (cosA < -1 || cosA > 1) {
+					std::cout << "cosA calculated with not normalized values!\n";
+				}*/
+				
+				float sinA = sqrtf(1.0f - (cosA * cosA));
+				
+				if (sinA < eta) {
+
+					float sinB = (sinA * ior0) / ior1;
 					float cosB = sqrtf(1.0f - sinB * sinB);
 					
-					/*vec3 A = (N * -1.0f) * cosB;
-					vec3 C = (I + N * cosA);
+					vec3 C = I + N * cosA;
 					normalizeVector(C);
+					vec3 A = N * cosB * (-1.0f);
 					vec3 B = C * sinB;
 					vec3 R = A + B;
-					normalizeVector(R);*/
-					vec3 R = I *eta + N*(eta * cosA - cosB) ;
+					
+					/*vec3 R = I * eta + N * (eta * cosA - sqrt(1.0f - eta * eta * (1.0f - cosA * cosA)));*/
 					normalizeVector(R);
 
-					Ray refractedRay = { closestPoint+((N*(- 1.0f)) * REFRACTION_BIAS), R};
-					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N*dot(I, N)*2};
-					vec3 outputColor0 = rayIntersect(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
-					vec3 outputColor1 = rayIntersect(triangleArray, triangleCount, refractedRay, scene, rayDepth+1);
-					float R0 = pow((ior1 - ior0) / (ior1 + ior0), 2);
-					float f = R0 + (1.0f - R0) * pow(1.0f - fabs(dot(I, N)), 5);
 
-					outputColor = outputColor0;//tri.material.getAlbedo()*(outputColor0 * f + outputColor1 * (1.0f - f));
+					Ray refractedRay = { closestPoint+((N*(- 1.0f)) * REFRACTION_BIAS), R};
+					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N* dotIN *2};
+					vec3 outputColorReflection = getAlbedoRay(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
+					vec3 outputColorRefraction = getAlbedoRay(triangleArray, triangleCount, refractedRay, scene, rayDepth+1);
+				
+					//using Schlick's aproximation
+					float cosTheta = fabs(dotIN);
+					float R0 = pow((ior0 - ior1) / (ior0 + ior1), 2.0f);
+					float f = R0 + (1.0f - R0) * pow(1.0f - cosTheta, 5.0f);
+					
+					//default formula
+					//float f = 0.5 * pow(1.0 + dot(I, N), 5);
+					
+					outputColor = (outputColorReflection * f + outputColorRefraction * (1.0f - f));
+					//outputColor = { 1,0,0 };
+					
 				}
 				else {
-					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N*dot(I, N)*2};
-					outputColor = rayIntersect(triangleArray, triangleCount, reflectedRay, scene, rayDepth+1);
-					outputColor=outputColor*tri.material.getAlbedo();
+					
+					normalizeVector(I);
+					vec3 R = I - N * dot(I,N) * 2;
+					normalizeVector(R);
+					Ray reflectedRay = { closestPoint + N * REFRACTION_BIAS,R };
+					outputColor = getAlbedoRay(triangleArray, triangleCount, reflectedRay, scene, rayDepth + 1);
+					
+					//outputColor = { 0,0,1 };
 				}
 									
 			}
@@ -463,7 +505,7 @@ void CreatePyramid(triangle * triangleArr,const float& size, const vec3& positio
 void rayTrace(const int& row, const int& col, const triangle * triangles, const int& sizeOfTriangles, Camera& camera, const Scene& scene){
 	Ray tempRay = generateRay(camera.getPos(), col, row, camera);
 	
-	framebuffer[row][col] = albedoToRGB(rayIntersect(triangles, sizeOfTriangles ,tempRay, scene));
+	framebuffer[row][col] = albedoToRGB(getAlbedoRay(triangles, sizeOfTriangles ,tempRay, scene));
 }
 
 void render(const std::string & fileName, triangle * triangles, int sizeOfTriangles,Camera& camera,const Scene& scene) {
@@ -537,7 +579,7 @@ int main(int argc, char *argv[]) {
 
 	std::copy(triangles.begin(),triangles.end(),triangleArray);
 	std::cout << "Loaded " + std::to_string(triangles.size()) + " triangles\n";
-	render("output_ray_traced_scene.ppm", triangleArray, triangles.size(), mainCamera, mainScene);
+	render("output_"+sceneFileName+".ppm", triangleArray, triangles.size(), mainCamera, mainScene);
 	std::cout << "Done!\n";
 	return 0;
 }

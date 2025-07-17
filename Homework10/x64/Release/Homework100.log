@@ -1,26 +1,19 @@
-﻿  Camera.cpp
-  MainProgram.cpp
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(46,30): warning C4018: '<': signed/unsigned mismatch
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(59,31): warning C4018: '<': signed/unsigned mismatch
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(78,35): warning C4018: '<': signed/unsigned mismatch
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(178,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(179,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(184,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(185,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(255,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(454,24): warning C4018: '<': signed/unsigned mismatch
-C:\repos\Yordan_ChaosCamp\Homework10\MainProgram.cpp(491,69): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  Light.cpp
-  Material.cpp
-  Math.cpp
-  Matrix.cpp
-  Mesh.cpp
-  triangle.cpp
-  vec3.cpp
+﻿  MainProgram.cpp
+D:\repos\Chaos\Homework10\MainProgram.cpp(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\repos\Chaos\Homework10\MainProgram.cpp(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\repos\Chaos\Homework10\MainProgram.cpp(47,30): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework10\MainProgram.cpp(76,31): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework10\MainProgram.cpp(95,35): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework10\MainProgram.cpp(195,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework10\MainProgram.cpp(196,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework10\MainProgram.cpp(201,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework10\MainProgram.cpp(202,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework10\MainProgram.cpp(272,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework10\MainProgram.cpp(545,24): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework10\MainProgram.cpp(582,70): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  Previous IPDB not found, fall back to full compilation.
-  All 905 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  3 of 921 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    12 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  Homework100.vcxproj -> C:\repos\Yordan_ChaosCamp\Homework10\x64\Release\Homework10.exe
+  Homework100.vcxproj -> D:\repos\Chaos\Homework10\x64\Release\Homework10.exe
