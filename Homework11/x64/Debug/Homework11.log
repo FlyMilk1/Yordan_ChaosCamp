@@ -1,0 +1,3 @@
+﻿  Texture.cpp
+D:\repos\Chaos\Homework11\Texture.cpp(89): warning C4715: 'Texture::getAlbedo': not all control paths return a value
+  Homework11.vcxproj -> D:\repos\Chaos\Homework10\x64\Debug\Homework11.exe

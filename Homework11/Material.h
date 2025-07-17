@@ -4,16 +4,16 @@
 
 class Material {
 public:
-    Material(const vec3& albedo = {0,0,0}, const bool& smoothShading = false, const std::string& type = "", const float& ior=0);
-    vec3 getAlbedo() const;
-    void setAlbedo(const vec3& newAlbedo);
+    Material(const int& textureId = 0, const bool& smoothShading = false, const std::string& type = "", const float& ior=0);
+    int getTextureId() const;
+    void setTextureId(const int& newTexId);
     std::string getType() const;
     float getIOR()const;
     bool getSmooth() const;
 
 private:
     std::string type;
-    vec3 albedo;
+    int textureId;
     bool smoothShading;
     float ior;
 };

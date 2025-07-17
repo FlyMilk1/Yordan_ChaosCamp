@@ -9,6 +9,9 @@ void Mesh::addTriangles(std::vector<triangle>& triangleArray) {
             vertices[triangleVertIndices[firstIndex]],
             vertices[triangleVertIndices[firstIndex+1]],
             vertices[triangleVertIndices[firstIndex+2]],
+			uvs[triangleVertIndices[firstIndex]],
+			uvs[triangleVertIndices[firstIndex + 1]],
+			uvs[triangleVertIndices[firstIndex + 2]],
             material
         );
         tempTriangleArray.push_back(tempTriangle);
@@ -92,7 +95,9 @@ void Mesh::setVertices(std::vector<vec3> vecArr) {
 void Mesh::setIndices(std::vector<int> indicesArr) {
     triangleVertIndices = indicesArr;
 }
-
+void Mesh::setUvs(std::vector<vec3> uvArr) {
+	uvs = uvArr;
+}
 void Mesh::setMat(const Material& newMaterial) {
     material = newMaterial;
 }

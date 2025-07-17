@@ -1,14 +1,14 @@
 #include "Material.h"
 
-Material::Material(const vec3& albedo, const bool& smoothShading, const std::string& type, const float& ior) 
-    : albedo(albedo), smoothShading(smoothShading), type(type), ior(ior) {}
+Material::Material(const int& textureId, const bool& smoothShading, const std::string& type, const float& ior) 
+    : textureId(textureId), smoothShading(smoothShading), type(type), ior(ior) {}
 
-vec3 Material::getAlbedo() const {
-    return albedo;
+int Material::getTextureId()const {
+    return textureId;
 }
 
-void Material::setAlbedo(const vec3& newAlbedo) {
-    albedo = newAlbedo;
+void Material::setTextureId(const int& newTexId) {
+    textureId = newTexId;
 }
 
 std::string Material::getType() const {

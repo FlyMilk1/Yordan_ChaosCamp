@@ -1,30 +1,9 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
-  Camera.cpp
-  Light.cpp
-  MainProgram.cpp
-D:\repos\Chaos\Homework11\MainProgram.cpp(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\repos\Chaos\Homework11\MainProgram.cpp(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
-D:\repos\Chaos\Homework11\MainProgram.cpp(47,30): warning C4018: '<': signed/unsigned mismatch
-D:\repos\Chaos\Homework11\MainProgram.cpp(76,31): warning C4018: '<': signed/unsigned mismatch
-D:\repos\Chaos\Homework11\MainProgram.cpp(95,35): warning C4018: '<': signed/unsigned mismatch
-D:\repos\Chaos\Homework11\MainProgram.cpp(195,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\repos\Chaos\Homework11\MainProgram.cpp(196,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\repos\Chaos\Homework11\MainProgram.cpp(201,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\repos\Chaos\Homework11\MainProgram.cpp(202,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\repos\Chaos\Homework11\MainProgram.cpp(272,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\repos\Chaos\Homework11\MainProgram.cpp(545,24): warning C4018: '<': signed/unsigned mismatch
-D:\repos\Chaos\Homework11\MainProgram.cpp(582,70): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  Material.cpp
-  Math.cpp
-  Matrix.cpp
-  Mesh.cpp
-D:\repos\Chaos\Homework11\Mesh.cpp(66,78): warning C4244: 'argument': conversion from 'unsigned __int64' to 'const float', possible loss of data
-D:\repos\Chaos\Homework11\Mesh.cpp(71,78): warning C4244: 'argument': conversion from 'unsigned __int64' to 'const float', possible loss of data
-D:\repos\Chaos\Homework11\Mesh.cpp(76,78): warning C4244: 'argument': conversion from 'unsigned __int64' to 'const float', possible loss of data
-  triangle.cpp
-  vec3.cpp
+  Texture.cpp
   Generating code
-  Previous IPDB not found, fall back to full compilation.
-  All 921 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+D:\repos\Chaos\Homework11\Texture.cpp(86): warning C4715: 'Texture::getAlbedo': not all control paths return a value
+  7 of 1167 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+    3 functions were new in current compilation
+    15 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Homework11.vcxproj -> D:\repos\Chaos\Homework11\x64\Release\Homework11.exe
