@@ -1,5 +1,5 @@
 //Yordan Yonchev - Chaos Raytracing course
-//Raytracing of triangles with camera movement, animation, lightning, materials and scene representation
+//Raytracing of triangles with camera movement, animation, lightning, materials, refraction, reflection, textures and scene representation
 #include "yordancrt.h"
 
 typedef unsigned  char uc;

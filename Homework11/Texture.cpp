@@ -57,7 +57,8 @@ void Texture::setSquareSize(const float& size) {
 	squareSize = size;
 }
 vec3 Texture::getCheckerColor(const float& u, const float& v, const vec3& uv0, const vec3& uv1, const vec3& uv2) {
-	vec3 uv = uv0 + (uv1 - uv0) * u + (uv2 - uv0) * v;
+	vec3 uv = uv0 * (1.0f - u - v) + uv1 * u + uv2 * v;
+
 
 	int x = (int)floor(uv.x / squareSize);
 	int y = (int)floor(uv.y / squareSize);
