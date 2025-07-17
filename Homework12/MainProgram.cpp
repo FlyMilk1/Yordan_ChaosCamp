@@ -55,17 +55,16 @@ vec3 rayTrace(const int& row, const int& col, const triangle * triangles, const 
 	
 	return Ray::getAlbedoRay(triangles, sizeOfTriangles ,tempRay, scene);
 }
-void renderRegion(triangle* triangles, int sizeOfTriangles, Camera& camera, const Scene& scene, const int x, const int y, const int width, const int height) {
-	for (int row = y; row<height; row++){
-		for (int col = x; col < width; col++) {
-			vec3 albedoPixel = rayTrace(row, col, triangles, sizeOfTriangles, camera, scene);
-			framebuffer[(row * col + col) * channels] = albedoPixel.x;
-			framebuffer[(row * col + col) * channels+1] = albedoPixel.y;
-			framebuffer[(row * col + col) * channels+2] = albedoPixel.z;
-		}
-	}
-	
-	
+void renderRegion(triangle* triangles, int sizeOfTriangles, Camera& camera, const Scene& scene, const int xStart, const int yStart, const int xEnd, const int yEnd) {
+    for (int row = yStart; row < yEnd; ++row) {
+        for (int col = xStart; col < xEnd; ++col) {
+            vec3 albedoPixel = rayTrace(row, col, triangles, sizeOfTriangles, camera, scene);
+            int pixelIndex = (row * imageWidth + col) * channels;
+            framebuffer[pixelIndex]     = albedoPixel.x;
+            framebuffer[pixelIndex + 1] = albedoPixel.y;
+            framebuffer[pixelIndex + 2] = albedoPixel.z;
+        }
+    }
 }
 void render(const std::string & fileName, triangle * triangles, int sizeOfTriangles,Camera& camera,const Scene& scene) {
 	std::cout << "Using " << processor_count << " threads." << std::endl;
@@ -77,26 +76,44 @@ void render(const std::string & fileName, triangle * triangles, int sizeOfTriang
 
 	
 
-	for (int startRowIdx = 0; startRowIdx < imageHeight - rowSegmentSize; startRowIdx += rowSegmentSize) {
-		for (int startColIdx = 0; startColIdx < imageWidth - columnSegmentSize; startColIdx += columnSegmentSize) {
-			std::thread tempThread(renderRegion, std::ref(triangles), sizeOfTriangles, std::ref(camera), std::ref(scene), startColIdx, startRowIdx, startColIdx + columnSegmentSize, startRowIdx + rowSegmentSize);
-			tempThread.join();
+	std::vector<std::thread> threads;
+
+	for (int startRowIdx = 0; startRowIdx < imageHeight; startRowIdx += rowSegmentSize) {
+		for (int startColIdx = 0; startColIdx < imageWidth; startColIdx += columnSegmentSize) {
+			threads.emplace_back(renderRegion,
+				std::ref(triangles),
+				sizeOfTriangles,
+				std::ref(camera),
+				std::ref(scene),
+				startColIdx,
+				startRowIdx,
+				std::min(startColIdx + columnSegmentSize, imageWidth),
+				std::min(startRowIdx + rowSegmentSize, imageHeight));
 		}
 	}
-	
-	//std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);
-	//ppmFileStream << "P3\n";
-	//ppmFileStream << imageWidth << " " << imageHeight << "\n";
-	//ppmFileStream << (int)maxColorComponent << "\n";
-	/*for (int row = 0; row<imageHeight; row++){
-	for (int col = 0; col < imageWidth; col++) {
-		Color tempColor = framebuffer[row][col];
 
-			
-			ppmFileStream << (int)tempColor.r << " " << (int)tempColor.g << " " << (int)tempColor.b << "\t";
+	for (int threadIdx = 0; threadIdx < threads.size(); threadIdx++) {
+		threads[threadIdx].join();
 	}
-	ppmFileStream << "\n";*/
-	//}
+
+	
+	std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);
+	ppmFileStream << "P3\n";
+	ppmFileStream << imageWidth << " " << imageHeight << "\n";
+	ppmFileStream << (int)maxColorComponent << "\n";
+	for (int byteIdx = 0; byteIdx < (imageHeight * imageWidth * channels); byteIdx += channels) {
+	int r = static_cast<int>(framebuffer[byteIdx] * 255.0f);
+	int g = static_cast<int>(framebuffer[byteIdx + 1] * 255.0f);
+	int b = static_cast<int>(framebuffer[byteIdx + 2] * 255.0f);
+
+	
+	r = std::min(255, std::max(0, r));
+	g = std::min(255, std::max(0, g));
+	b = std::min(255, std::max(0, b));
+
+	ppmFileStream << r << " " << g << " " << b << "\n";
+}
+
 }
 void animate(const unsigned int& frames, Camera& camera, int sizeOfTriangles, triangle * triangles, const Scene& scene){
 	float startTilt = -45 ;
