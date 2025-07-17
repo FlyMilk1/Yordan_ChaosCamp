@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <thread>
 #include "include/rapidjson/document.h"
 #include "include/rapidjson/istreamwrapper.h"
 #include <iostream>
@@ -13,6 +14,7 @@
 #include "Math.h"
 #include "Color.h"
 #include "vec3.h"
+#include <functional>
 
 #include "Material.h"
 #include "triangle.h"

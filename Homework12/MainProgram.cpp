@@ -1,15 +1,16 @@
 //Yordan Yonchev - Chaos Raytracing course
 //Raytracing of triangles with camera movement, animation, lightning, materials, refraction, reflection, textures and scene representation
 #include "yordancrt.h"
-
+const int channels = 3;
 typedef unsigned  char uc;
+const auto processor_count = std::thread::hardware_concurrency();
 
 static int imageWidth = 640;
 static int imageHeight = 480;
 
 static const uc maxColorComponent = 255;
 
-Color ** framebuffer;
+float * framebuffer;
 static const Color red = { 255,0,0 };
 static const Color green = { 0,255,0 };
 static const Color blue = { 0,0,255 };
@@ -19,9 +20,6 @@ static const Color purple = { 255,0,255 };
 
 Color albedoToRGB(const vec3& albedo){
 	return {(uc)floor(albedo.x*255),(uc)floor(albedo.y*255),(uc)floor(albedo.z*255)};
-}
-void setPixel(int x, int y, Color color) {
-	framebuffer[y][x] = color;
 }
 vec3 getRayDirection(int col, int row, int screenZ) {
 	//pixel coord
@@ -52,34 +50,53 @@ Ray generateRay(const vec3& origin, int pixelX, int pixelY, Camera& camera) {
 
 
 
-void rayTrace(const int& row, const int& col, const triangle * triangles, const int& sizeOfTriangles, Camera& camera, const Scene& scene){
+vec3 rayTrace(const int& row, const int& col, const triangle * triangles, const int& sizeOfTriangles, Camera& camera, const Scene& scene){
 	Ray tempRay = generateRay(camera.getPos(), col, row, camera);
 	
-	framebuffer[row][col] = albedoToRGB(Ray::getAlbedoRay(triangles, sizeOfTriangles ,tempRay, scene));
+	return Ray::getAlbedoRay(triangles, sizeOfTriangles ,tempRay, scene);
 }
-
-void render(const std::string & fileName, triangle * triangles, int sizeOfTriangles,Camera& camera,const Scene& scene) {
-	for (int row = 0; row<imageHeight; row++){
-	for (int col = 0; col < imageWidth; col++) {
-		rayTrace(row, col, triangles, sizeOfTriangles, camera, scene);
-	}
-		if(row%100==0){
-			std::cout << "Ray traced row group: " + std::to_string(row/100) + "\n";
+void renderRegion(triangle* triangles, int sizeOfTriangles, Camera& camera, const Scene& scene, const int x, const int y, const int width, const int height) {
+	for (int row = y; row<height; row++){
+		for (int col = x; col < width; col++) {
+			vec3 albedoPixel = rayTrace(row, col, triangles, sizeOfTriangles, camera, scene);
+			framebuffer[(row * col + col) * channels] = albedoPixel.x;
+			framebuffer[(row * col + col) * channels+1] = albedoPixel.y;
+			framebuffer[(row * col + col) * channels+2] = albedoPixel.z;
 		}
 	}
-	std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);
-	ppmFileStream << "P3\n";
-	ppmFileStream << imageWidth << " " << imageHeight << "\n";
-	ppmFileStream << (int)maxColorComponent << "\n";
-	for (int row = 0; row<imageHeight; row++){
+	
+	
+}
+void render(const std::string & fileName, triangle * triangles, int sizeOfTriangles,Camera& camera,const Scene& scene) {
+	std::cout << "Using " << processor_count << " threads." << std::endl;
+	int rowRegions = (int)floor(sqrtf(processor_count));
+	int columnRegions = processor_count / rowRegions;
+
+	int rowSegmentSize = imageHeight / rowRegions;
+	int columnSegmentSize = imageWidth / columnRegions;
+
+	
+
+	for (int startRowIdx = 0; startRowIdx < imageHeight - rowSegmentSize; startRowIdx += rowSegmentSize) {
+		for (int startColIdx = 0; startColIdx < imageWidth - columnSegmentSize; startColIdx += columnSegmentSize) {
+			std::thread tempThread(renderRegion, std::ref(triangles), sizeOfTriangles, std::ref(camera), std::ref(scene), startColIdx, startRowIdx, startColIdx + columnSegmentSize, startRowIdx + rowSegmentSize);
+			tempThread.join();
+		}
+	}
+	
+	//std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);
+	//ppmFileStream << "P3\n";
+	//ppmFileStream << imageWidth << " " << imageHeight << "\n";
+	//ppmFileStream << (int)maxColorComponent << "\n";
+	/*for (int row = 0; row<imageHeight; row++){
 	for (int col = 0; col < imageWidth; col++) {
 		Color tempColor = framebuffer[row][col];
 
 			
 			ppmFileStream << (int)tempColor.r << " " << (int)tempColor.g << " " << (int)tempColor.b << "\t";
 	}
-	ppmFileStream << "\n";
-}
+	ppmFileStream << "\n";*/
+	//}
 }
 void animate(const unsigned int& frames, Camera& camera, int sizeOfTriangles, triangle * triangles, const Scene& scene){
 	float startTilt = -45 ;
@@ -110,10 +127,8 @@ int main(int argc, char *argv[]) {
 	imageHeight = mainScene.settings.resolution.height;
 	imageWidth = mainScene.settings.resolution.width;
 	std::cout << "Generating image with size: "+ std::to_string(mainScene.settings.resolution.width) +"x"+std::to_string(mainScene.settings.resolution.height)+"\n";
-	framebuffer = new Color*[imageHeight];
-	for (int i = 0; i < imageHeight; i++) {
-		framebuffer[i] = new Color[imageWidth];
-	}
+	framebuffer = new float[imageHeight*imageWidth*channels];
+	
 	Camera mainCamera;
 	vec3 cameraPos = mainScene.camera.getPos();
 	mainCamera.setPos(cameraPos);
