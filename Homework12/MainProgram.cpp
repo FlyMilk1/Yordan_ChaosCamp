@@ -55,14 +55,30 @@ vec3 rayTrace(const int& row, const int& col, const triangle * triangles, const 
 	
 	return Ray::getAlbedoRay(triangles, sizeOfTriangles ,tempRay, scene);
 }
-void renderRegion(triangle* triangles, int sizeOfTriangles, Camera& camera, const Scene& scene, const int xStart, const int yStart, const int xEnd, const int yEnd) {
-    for (int row = yStart; row < yEnd; ++row) {
-        for (int col = xStart; col < xEnd; ++col) {
-            vec3 albedoPixel = rayTrace(row, col, triangles, sizeOfTriangles, camera, scene);
-            int pixelIndex = (row * imageWidth + col) * channels;
-            framebuffer[pixelIndex]     = albedoPixel.x;
-            framebuffer[pixelIndex + 1] = albedoPixel.y;
-            framebuffer[pixelIndex + 2] = albedoPixel.z;
+void renderBucket(triangle* triangles, int sizeOfTriangles, Camera& camera, const Scene& scene, std::vector<Bucket>& buckets, std::mutex& bucketMutex) {
+	 while (true) {
+        Bucket bucket;
+
+        {
+            std::lock_guard<std::mutex> lock(bucketMutex);
+            if (buckets.empty()) break;
+            bucket = buckets.back();
+            buckets.pop_back();
+        }
+
+        int xStart = bucket.getStartX();
+        int yStart = bucket.getStartY();
+        int xEnd = bucket.getEndX();
+        int yEnd = bucket.getEndY();
+
+        for (int row = yStart; row < yEnd; ++row) {
+            for (int col = xStart; col < xEnd; ++col) {
+                vec3 albedoPixel = rayTrace(row, col, triangles, sizeOfTriangles, camera, scene);
+                int pixelIndex = (row * imageWidth + col) * channels;
+                framebuffer[pixelIndex]     = albedoPixel.x;
+                framebuffer[pixelIndex + 1] = albedoPixel.y;
+                framebuffer[pixelIndex + 2] = albedoPixel.z;
+            }
         }
     }
 }
@@ -75,26 +91,17 @@ void render(const std::string & fileName, triangle * triangles, int sizeOfTriang
 	int columnSegmentSize = imageWidth / columnRegions;
 
 	
-
+	std::vector<Bucket> buckets = Bucket::generateBuckets(imageWidth,imageHeight, scene.settings.bucketSize);
+	std::mutex bucketMutex;
 	std::vector<std::thread> threads;
 
-	for (int startRowIdx = 0; startRowIdx < imageHeight; startRowIdx += rowSegmentSize) {
-		for (int startColIdx = 0; startColIdx < imageWidth; startColIdx += columnSegmentSize) {
-			threads.emplace_back(renderRegion,
-				std::ref(triangles),
-				sizeOfTriangles,
-				std::ref(camera),
-				std::ref(scene),
-				startColIdx,
-				startRowIdx,
-				std::min(startColIdx + columnSegmentSize, imageWidth),
-				std::min(startRowIdx + rowSegmentSize, imageHeight));
-		}
+	for (int threadIdx = 0; threadIdx < processor_count; threadIdx++) {
+		
+		threads.emplace_back(renderBucket, std::ref(triangles), sizeOfTriangles, std::ref(camera), std::ref(scene), std::ref(buckets), std::ref(bucketMutex));
 	}
 
-	for (int threadIdx = 0; threadIdx < threads.size(); threadIdx++) {
-		threads[threadIdx].join();
-	}
+	for (auto& thread : threads) thread.join();
+
 
 	
 	std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);

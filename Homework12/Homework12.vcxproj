@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bucket.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="IntersectionData.cpp" />
     <ClCompile Include="Light.cpp" />
@@ -145,6 +146,7 @@
     <ClCompile Include="vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bucket.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="IntersectionData.h" />

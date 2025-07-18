@@ -54,6 +54,9 @@
     <ClCompile Include="vec3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Bucket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="yordancrt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bucket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

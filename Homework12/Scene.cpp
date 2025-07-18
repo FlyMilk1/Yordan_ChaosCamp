@@ -15,8 +15,10 @@ void Scene::loadScene(std::string sceneFileName) {
 
         const rapidjson::Value& widthVal = imgSettingsValue.FindMember("width")->value;
         const rapidjson::Value& heightVal = imgSettingsValue.FindMember("height")->value;
-        assert(!widthVal.IsNull() && !heightVal.IsNull());
-        settings.resolution = { widthVal.GetInt(), heightVal.GetInt() };
+        const rapidjson::Value& bucketSizeVal = imgSettingsValue.FindMember("bucket_size")->value;
+        assert(!widthVal.IsNull() && !heightVal.IsNull() && !bucketSizeVal.IsNull());
+        settings.resolution = { widthVal.GetInt(), heightVal.GetInt()};
+        settings.bucketSize = bucketSizeVal.GetInt();
     }
     //Camera
     const rapidjson::Value& cameraVal = doc.FindMember("camera")->value;

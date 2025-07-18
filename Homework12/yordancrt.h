@@ -15,6 +15,7 @@
 #include "Color.h"
 #include "vec3.h"
 #include <functional>
+#include <mutex>
 
 #include "Material.h"
 #include "triangle.h"
@@ -27,3 +28,4 @@
 #include "IntersectionData.h"
 #include "Scene.h"
 #include "Ray.h"
+#include "Bucket.h"

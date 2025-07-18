@@ -9,5 +9,7 @@ public:
         int width;
         int height;
     };
+
     struct imageSettings resolution;
+    int bucketSize;
 };
