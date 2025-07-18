@@ -1,4 +1,11 @@
-﻿  MainProgram.cpp
+﻿  AABB.cpp
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'AABB.cpp')
+  
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.h(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'AABB.cpp')
+  
+  MainProgram.cpp
 C:\repos\Yordan_ChaosCamp\Homework12\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
   (compiling source file 'MainProgram.cpp')
   
@@ -9,7 +16,32 @@ C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(26,10): warning C4244: 'ini
 C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(27,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(32,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(33,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(72,36): warning C4244: 'argument': conversion from 'const unsigned int' to 'float', possible loss of data
-C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(120,24): warning C4018: '<': signed/unsigned mismatch
-C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(161,70): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(93,36): warning C4244: 'argument': conversion from 'const unsigned int' to 'float', possible loss of data
+C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(104,36): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(142,24): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\MainProgram.cpp(183,70): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Ray.cpp
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Ray.cpp')
+  
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.h(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Ray.cpp')
+  
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.cpp(225,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Scene.cpp
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Scene.cpp')
+  
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.h(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Scene.cpp')
+  
+C:\repos\Yordan_ChaosCamp\Homework12\Scene.cpp(36,35): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\Scene.cpp(71,35): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\Scene.cpp(111,35): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\Scene.cpp(127,39): warning C4018: '<': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\Scene.cpp(193,29): warning C4018: '<=': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\Scene.cpp(202,29): warning C4018: '<=': signed/unsigned mismatch
+C:\repos\Yordan_ChaosCamp\Homework12\Scene.cpp(212,31): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
+C:\repos\Yordan_ChaosCamp\Homework12\Ray.cpp(50): warning C4715: 'Ray::checkIntersection': not all control paths return a value
   Homework12.vcxproj -> C:\repos\Yordan_ChaosCamp\Homework10\x64\Debug\Homework12.exe

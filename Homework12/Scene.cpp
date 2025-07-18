@@ -118,6 +118,7 @@ void Scene::loadScene(std::string sceneFileName) {
             geometryObjects.push_back(
                 loadMesh(verticesVal.GetArray(), indicesVal.GetArray(), uvsVal, materials[matIdVal.GetInt()])
             );
+            aabb.generateAABB(geometryObjects);
         }
     }
     //Lights

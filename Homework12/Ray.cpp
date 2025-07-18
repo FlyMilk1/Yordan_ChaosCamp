@@ -1,4 +1,5 @@
 #include "Ray.h"
+#include "Scene.h"
 Ray::Ray(const vec3& origin, const vec3& direction, const std::string& type):
 	origin(origin), dir(direction), type(type){}
 IntersectionData Ray::checkIntersection(const triangle* triangleArray, const int& triangleCount, const Ray& ray, const triangle& ignoreTriangle) {

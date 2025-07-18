@@ -29,3 +29,4 @@
 #include "Scene.h"
 #include "Ray.h"
 #include "Bucket.h"
+#include "AABB.h"

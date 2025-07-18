@@ -16,6 +16,7 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "AABB.h"
 
 class Scene {
 public:
@@ -26,6 +27,8 @@ public:
     Camera camera;
     Settings settings;
     std::vector<Light> lights;
+    AABB aabb;
+ 
     std::vector<Texture> getTexture()const;
     void setTexture(const std::vector<Texture>& newTextures);
 

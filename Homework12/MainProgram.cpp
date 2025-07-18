@@ -51,9 +51,15 @@ Ray generateRay(const vec3& origin, int pixelX, int pixelY, Camera& camera) {
 
 
 vec3 rayTrace(const int& row, const int& col, const triangle * triangles, const int& sizeOfTriangles, Camera& camera, const Scene& scene){
-	Ray tempRay = generateRay(camera.getPos(), col, row, camera);
+	const Ray tempRay = generateRay(camera.getPos(), col, row, camera);
+	float tHit;
+	if (scene.aabb.checkSides(tempRay, tHit)) {
+		return Ray::getAlbedoRay(triangles, sizeOfTriangles ,tempRay, scene);
+	}
+	else {
+		return scene.settings.bgColor;
+	}
 	
-	return Ray::getAlbedoRay(triangles, sizeOfTriangles ,tempRay, scene);
 }
 void renderBucket(triangle* triangles, int sizeOfTriangles, Camera& camera, const Scene& scene, std::vector<Bucket>& buckets, std::mutex& bucketMutex) {
 	 while (true) {

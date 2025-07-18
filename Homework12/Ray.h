@@ -2,13 +2,14 @@
 #include "vec3.h"
 #include <string>
 #include "IntersectionData.h"
-#include "Scene.h"
+
 #include "Math.h"
 const float SHADOW_BIAS = 1e-3;
 const float REFRACTION_BIAS = 1e-3;
 const float REFRACTION_DEPTH = 5;
 const double pi = 3.14159265358979323846;
-const float EPSILON = std::numeric_limits<float>::epsilon();
+const float EPSILON = 1e-6f;
+class Scene;
 class Ray {
 public:
     Ray(const vec3& origin, const vec3& direction, const std::string& type="");
