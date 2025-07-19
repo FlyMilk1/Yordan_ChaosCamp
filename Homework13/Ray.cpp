@@ -48,11 +48,9 @@ IntersectionData Ray::checkIntersection(const std::vector<triangle>& triangleArr
 	}
 
 }
-vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ray, const Scene& scene, const int& rayDepth) {
+vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ray, const Scene& scene, int rayDepth) {
 	vec3 outputColor = scene.settings.bgColor;
-	if (triangleArray.size() == 0) {
-		return outputColor;
-	}
+
 	float closestT = FLT_MAX;
 	vec3 closestPoint;
 	const triangle* closestTriangle = nullptr;
@@ -119,10 +117,10 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 				vec3 N;
 
 				if (tri.material.getSmooth()) {
-					/*const vec3 v0v2 = (tri.v2 - tri.v0);
+					const vec3 v0v2 = (tri.v2 - tri.v0);
 					const vec3 v0v1 = (tri.v1 - tri.v0);
 					const float u = length(cross((closestPoint - tri.v0), v0v2)) / length(cross(v0v1, v0v2));
-					const float v = length(cross(v0v1, (closestPoint - tri.v0))) / length(cross(v0v1, v0v2));*/
+					const float v = length(cross(v0v1, (closestPoint - tri.v0))) / length(cross(v0v1, v0v2));
 					N = tri.v1N * u + tri.v2N * v + tri.v0N * (1 - u - v);
 
 

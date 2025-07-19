@@ -5,7 +5,7 @@ const int channels = 3;
 typedef unsigned  char uc;
 const auto processor_count = std::thread::hardware_concurrency();
 
-static int imageWidth = 480;
+static int imageWidth = 640;
 static int imageHeight = 480;
 
 static const uc maxColorComponent = 255;
@@ -20,7 +20,7 @@ static const Color purple = { 255,0,255 };
 Color albedoToRGB(const vec3& albedo){
 	return {(uc)floor(albedo.x*255),(uc)floor(albedo.y*255),(uc)floor(albedo.z*255)};
 }
-vec3 getRayDirection(const int& col, const int& row, const int& screenZ) {
+vec3 getRayDirection(int col, int row, int screenZ) {
 	//pixel coord
 	float x = col + 0.5;
 	float y = row + 0.5;
@@ -38,29 +38,29 @@ vec3 getRayDirection(const int& col, const int& row, const int& screenZ) {
 	return { x, y, -1.0 };
 }
 
-Ray generateRay(const vec3& origin, const int& pixelX, const int& pixelY, Camera& camera) {
+Ray generateRay(const vec3& origin, int pixelX, int pixelY, Camera& camera) {
 	vec3 dir = getRayDirection(pixelX, pixelY, -1);
 	dir = dir*camera.getRotMatrix();
 	normalizeVector(dir);
 	return { origin,dir };
 }
 
-vec3 rayTrace(const int& row, const int& col, Camera& camera, const Scene& scene){
+vec3 rayTrace(const int& row, const int& col, const std::vector<triangle>& triangles, Camera& camera, const Scene& scene){
 	const Ray tempRay = generateRay(camera.getPos(), col, row, camera);
-	
+	float tHit;
 	return Ray::getAlbedoRay(scene.accTree.traverse(tempRay), tempRay, scene);
 	
 	
 }
-void renderBucket(const std::vector<triangle>& triangleArray, Camera& camera, const Scene& scene, std::stack<Bucket>& buckets, std::mutex& bucketMutex) {
+void renderBucket(const std::vector<triangle>& triangleArray, Camera& camera, const Scene& scene, std::vector<Bucket>& buckets, std::mutex& bucketMutex) {
 	 while (true) {
         Bucket bucket;
 
         {
             std::lock_guard<std::mutex> lock(bucketMutex);
             if (buckets.empty()) break;
-			bucket = buckets.top();
-			buckets.pop();
+            bucket = buckets.back();
+            buckets.pop_back();
         }
 
         int xStart = bucket.getStartX();
@@ -70,7 +70,7 @@ void renderBucket(const std::vector<triangle>& triangleArray, Camera& camera, co
 
         for (int row = yStart; row < yEnd; ++row) {
             for (int col = xStart; col < xEnd; ++col) {
-                vec3 albedoPixel = rayTrace(row, col, camera, scene);
+                vec3 albedoPixel = rayTrace(row, col, triangleArray, camera, scene);
                 int pixelIndex = (row * imageWidth + col) * channels;
                 framebuffer[pixelIndex]     = albedoPixel.x;
                 framebuffer[pixelIndex + 1] = albedoPixel.y;
@@ -84,7 +84,7 @@ void render(const std::string & fileName, const std::vector<triangle>& triangles
 	
 
 	
-	std::stack<Bucket> buckets = Bucket::generateBuckets(imageWidth,imageHeight, scene.settings.bucketSize);
+	std::vector<Bucket> buckets = Bucket::generateBuckets(imageWidth,imageHeight, scene.settings.bucketSize);
 	std::mutex bucketMutex;
 	std::vector<std::thread> threads;
 
@@ -95,10 +95,8 @@ void render(const std::string & fileName, const std::vector<triangle>& triangles
 
 	for (auto& thread : threads) thread.join();
 
-	
-	
-	
 
+	
 	std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);
 	ppmFileStream << "P3\n";
 	ppmFileStream << imageWidth << " " << imageHeight << "\n";
@@ -115,7 +113,7 @@ void render(const std::string & fileName, const std::vector<triangle>& triangles
 
 	ppmFileStream << r << " " << g << " " << b << "\n";
 }
-	
+
 }
 void animate(const unsigned int& frames, Camera& camera,const std::vector<triangle>& triangles, const Scene& scene){
 	float startTilt = -45 ;
