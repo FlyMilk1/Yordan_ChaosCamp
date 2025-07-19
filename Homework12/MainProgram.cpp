@@ -90,11 +90,7 @@ void renderBucket(triangle* triangles, int sizeOfTriangles, Camera& camera, cons
 }
 void render(const std::string & fileName, triangle * triangles, int sizeOfTriangles,Camera& camera,const Scene& scene) {
 	std::cout << "Using " << processor_count << " threads." << std::endl;
-	int rowRegions = (int)floor(sqrtf(processor_count));
-	int columnRegions = processor_count / rowRegions;
-
-	int rowSegmentSize = imageHeight / rowRegions;
-	int columnSegmentSize = imageWidth / columnRegions;
+	
 
 	
 	std::vector<Bucket> buckets = Bucket::generateBuckets(imageWidth,imageHeight, scene.settings.bucketSize);
