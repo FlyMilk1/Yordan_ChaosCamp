@@ -1,8 +1,8 @@
 #pragma once
 #include "AABB.h"
 #include "Ray.h"
-const int maxDepth = 5;
-const int maxTriangles = 1;
+const int maxDepth = 16;
+const int maxTriangles = 2;
 struct AccTreeNode {
 	AccTreeNode(const AABB& aabb, const int leftNodeIdx, const int rightNodeIdx);
 	

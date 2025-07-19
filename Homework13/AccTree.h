@@ -55,7 +55,7 @@ struct AccTree {
 			float tHit;
 			if (currentNode.aabb.checkSides(ray, tHit)) {
 				if (currentNode.triangles.size() > 0) {
-					IntersectionData interData = currentNode.intersect(ray);
+					//IntersectionData interData = currentNode.intersect(ray);
 					triangles.insert(triangles.end(), currentNode.triangles.begin(), currentNode.triangles.end());
 				}
 				else {

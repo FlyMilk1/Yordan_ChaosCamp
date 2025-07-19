@@ -6,15 +6,15 @@ int Bucket::getBucketSize()const
 {
     return bucketSize;
 }
-std::vector<Bucket> Bucket::generateBuckets(const int& imageWidth, const int& imageHeight, const int& bucketsize) {
-			std::vector<Bucket> bucketArray;
+std::stack<Bucket> Bucket::generateBuckets(const int& imageWidth, const int& imageHeight, const int& bucketsize) {
+			std::stack<Bucket> bucketArray;
 			if (imageHeight % bucketsize == 0 && imageWidth % bucketsize == 0) {
 				int rowsOfBuckets = imageHeight / bucketsize;
 				int colsOfBuckets = imageWidth / bucketsize;
 				for (int rowIdx=0; rowIdx < rowsOfBuckets; rowIdx++) {
 					for (int colIdx=0; colIdx < colsOfBuckets; colIdx++) {
 						Bucket newBucket(bucketsize, bucketsize * colIdx, bucketsize * rowIdx, bucketsize * colIdx + bucketsize, bucketsize * rowIdx + bucketsize);
-						bucketArray.push_back(newBucket);
+						bucketArray.push(newBucket);
 					}
 				}
 			}
