@@ -34,3 +34,4 @@
 #include "AABB.h"
 #include "AccTreeNode.h"
 #include "AccTree.h"
+#include "AnimationSegment.h"

@@ -95,7 +95,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 				std::cout << "Invalid normal!" << std::endl;
 			}
 
-			vec3 shaded = shade(closestPoint, scene, *closestTriangle, triangleArray, normalForShading, surfaceColor);
+			vec3 shaded = shade(closestPoint, scene, *closestTriangle, scene.sceneTriangles, normalForShading, surfaceColor);
 			
 			
 			outputColor = shaded*surfaceColor;
@@ -104,12 +104,19 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 		}
 		else if (materialType == "reflective") {
 			if (rayDepth < REFRACTION_DEPTH) {
-				vec3 A = ray.dir;
-				vec3 R = A - (tri.normalVec * dot(A, tri.normalVec)) * 2;
+				vec3 I = ray.dir;
+				vec3 N;
+				if (tri.material.getSmooth()) {
+					N = tri.v1N * u + tri.v2N * v + tri.v0N * (1 - u - v);
+				}
+				else {
+					N = tri.normalVec;
+				}
+				normalizeVector(I);
+				vec3 R = I - N * dot(I, N) * 2;
 				normalizeVector(R);
-				Ray reflectedRay = { closestPoint + tri.normalVec * EPSILON,R };
-				outputColor = getAlbedoRay(triangleArray, reflectedRay, scene, rayDepth + 1);
-				outputColor = outputColor * surfaceColor;
+				Ray reflectedRay = { closestPoint + N * REFRACTION_BIAS,R };
+				outputColor = getAlbedoRay(scene.sceneTriangles, reflectedRay, scene, rayDepth+1);
 			}
 		}
 		else if (materialType == "refractive") {
@@ -173,8 +180,8 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 
 					Ray refractedRay = { closestPoint + ((N * (-1.0f)) * REFRACTION_BIAS), R };
 					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N * dotIN * 2 };
-					vec3 outputColorReflection = getAlbedoRay(triangleArray, reflectedRay, scene, rayDepth + 1);
-					vec3 outputColorRefraction = getAlbedoRay(triangleArray, refractedRay, scene, rayDepth + 1);
+					vec3 outputColorReflection = getAlbedoRay(scene.sceneTriangles, reflectedRay, scene, rayDepth + 1);
+					vec3 outputColorRefraction = getAlbedoRay(scene.sceneTriangles, refractedRay, scene, rayDepth + 1);
 
 					//using Schlick's aproximation
 					float cosTheta = fabs(dotIN);
@@ -194,7 +201,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 					vec3 R = I - N * dot(I, N) * 2;
 					normalizeVector(R);
 					Ray reflectedRay = { closestPoint + N * REFRACTION_BIAS,R };
-					outputColor = getAlbedoRay(triangleArray, reflectedRay, scene, rayDepth + 1);
+					outputColor = getAlbedoRay(scene.sceneTriangles, reflectedRay, scene, rayDepth + 1);
 
 					//outputColor = { 0,0,1 };
 				}

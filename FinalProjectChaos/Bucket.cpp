@@ -7,23 +7,29 @@ int Bucket::getBucketSize()const
     return bucketSize;
 }
 std::stack<Bucket> Bucket::generateBuckets(const int& imageWidth, const int& imageHeight, const int& bucketsize) {
-			std::stack<Bucket> bucketArray;
-			if (imageHeight % bucketsize == 0 && imageWidth % bucketsize == 0) {
-				int rowsOfBuckets = imageHeight / bucketsize;
-				int colsOfBuckets = imageWidth / bucketsize;
-				for (int rowIdx=0; rowIdx < rowsOfBuckets; rowIdx++) {
-					for (int colIdx=0; colIdx < colsOfBuckets; colIdx++) {
-						Bucket newBucket(bucketsize, bucketsize * colIdx, bucketsize * rowIdx, bucketsize * colIdx + bucketsize, bucketsize * rowIdx + bucketsize);
-						bucketArray.push(newBucket);
-					}
-				}
-			}
-			else {
-				std::cout << "Cannot divide image resolution by bucket size!\n Please use another resolution or bucket size.\n";
-			}
-			return bucketArray;
-			
+	int customBucketSize = bucketsize;
+	std::stack<Bucket> bucketArray;
+	if (imageHeight % bucketsize == 0 && imageWidth % bucketsize == 0) {
+		customBucketSize = 10;
+	}
+	if (imageHeight % bucketsize == 0 && imageWidth % bucketsize == 0) {
+		std::cout << "Falling to very inefficient bucket size due to image resolution.\nPlease consider changing the resolution to a more universal standard.";;
+		customBucketSize = 2;
+	}
+	int rowsOfBuckets = imageHeight / bucketsize;
+	int colsOfBuckets = imageWidth / bucketsize;
+	for (int rowIdx=0; rowIdx < rowsOfBuckets; rowIdx++) {
+		for (int colIdx=0; colIdx < colsOfBuckets; colIdx++) {
+			Bucket newBucket(bucketsize, bucketsize * colIdx, bucketsize * rowIdx, bucketsize * colIdx + bucketsize, bucketsize * rowIdx + bucketsize);
+			bucketArray.push(newBucket);
 		}
+	}
+			
+				
+			
+	return bucketArray;
+			
+}
 
 int Bucket::getStartX() const
 {

@@ -32,3 +32,8 @@ int AnimationSegment::getFrame() const
 {
 	return frame;
 }
+
+std::vector<AnimationSegment> AnimationSegment::getInterpolation()const
+{
+	return interpolationFromLast;
+}

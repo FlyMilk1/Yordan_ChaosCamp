@@ -5,6 +5,7 @@
 #include "vec3.h"
 #include "AnimationSegment.h"
 #include <vector>
+#include "Renderer.h"
 
 class MainUI : public QMainWindow
 {
@@ -22,5 +23,7 @@ private:
     vec3 zeroVector = { 0.0f,0.0f,0.0f };
     AnimationSegment previousSegment;
     bool firstTime = true;
+    AnimationSegment getAnimationSegment();
+    void previewFrame();
 };
 

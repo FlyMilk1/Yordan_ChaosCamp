@@ -9,6 +9,7 @@ public:
 	float getTilt()const;
 	vec3 getPosition()const;
 	int getFrame()const;
+	std::vector<AnimationSegment> getInterpolation()const;
 private:
 	std::vector<AnimationSegment> interpolationFromLast;
 	float pan;

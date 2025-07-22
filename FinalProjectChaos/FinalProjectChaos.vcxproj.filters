@@ -112,6 +112,7 @@
     <ClInclude Include="yordancrt.h" />
     <ClInclude Include="yordanMath.h" />
     <ClInclude Include="AnimationSegment.h" />
+    <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainUI.h" />
