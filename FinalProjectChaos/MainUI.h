@@ -25,5 +25,12 @@ private:
     bool firstTime = true;
     AnimationSegment getAnimationSegment();
     void previewFrame();
+    bool standartResolution;
+    void setToStandartResolution();
+    int standardResolutions[4][2] = { { 1920, 1080}, {1280, 720}, {960, 480}, {720, 360 } };
+
+    void generateAnimation();
+    void generateImage();
 };
+
 

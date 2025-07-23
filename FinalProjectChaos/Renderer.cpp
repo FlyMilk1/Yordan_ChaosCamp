@@ -87,8 +87,8 @@ QImage Renderer::render(const std::string & fileName, const std::vector<triangle
 	if (isPreview) {
 		return framebufferToQImage(framebuffer, scene.settings.resolution.width, scene.settings.resolution.height);
 	}
-	else {
-		std::ofstream ppmFileStream(fileName, std::ios::out | std::ios::binary);
+	else if(!isAnimation){
+		std::ofstream ppmFileStream(fileName+".ppm", std::ios::out | std::ios::binary);
 		ppmFileStream << "P3\n";
 		ppmFileStream << scene.settings.resolution.width << " " << scene.settings.resolution.height << "\n";
 		ppmFileStream << (int)maxColorComponent << "\n";
@@ -109,15 +109,20 @@ QImage Renderer::render(const std::string & fileName, const std::vector<triangle
 	return defaultImage;
 	
 }
-void Renderer::animate(const std::string& fileName,const unsigned int& frames, Camera& camera,const std::vector<triangle>& triangles, const Scene& scene,const std::vector<AnimationSegment>& segmentArray){
-	
+void Renderer::animate(const std::string& fileName, Camera& camera,const std::vector<triangle>& triangles, const Scene& scene,const std::vector<AnimationSegment>& segmentArray){
+	isAnimation = true;
+	int frameCount=0;
 	for (int segmentIdx = 0; segmentIdx < segmentArray.size(); segmentIdx++) {
 		for (int frameIdx = 0; frameIdx < segmentArray[segmentIdx].getInterpolation().size(); frameIdx++) {
 			camera.truck(segmentArray[segmentIdx].getInterpolation()[frameIdx].getPosition());
 			camera.tilt(segmentArray[segmentIdx].getInterpolation()[frameIdx].getTilt());
 			camera.pan(segmentArray[segmentIdx].getInterpolation()[frameIdx].getPan());
 			render(fileName, triangles, camera, scene);
-			const std::string frameName = "animation/frame_" + segmentArray[segmentIdx].getInterpolation()[frameIdx].getFrame();
+			std::string folderPath = "Animation";
+			if (!std::filesystem::exists(folderPath)) {
+				std::filesystem::create_directories(folderPath);  // also creates parent folders
+			}
+			const std::string frameName = "animation/frame_" + std::to_string(frameCount++) + ".ppm";
 			std::ofstream ppmFileStream(frameName, std::ios::out | std::ios::binary);
 			ppmFileStream << "P3\n";
 			ppmFileStream << scene.settings.resolution.width << " " << scene.settings.resolution.height << "\n";
@@ -170,7 +175,9 @@ QImage Renderer::framebufferToQImage(float* framebuffer, int width, int height) 
 }
 
 
-int Renderer::generateImage(const std::string& fileName, QImage& qimagePtr, const int& customWidth, const int& customHeight, const AnimationSegment& animationSegment) {
+int Renderer::generateImage(const std::string& fileName, QImage& qimagePtr, const int& customWidth, const int& customHeight, const bool& isAnimation, const AnimationSegment& animationSegment, const std::vector<AnimationSegment> animationFrames)
+{
+
 	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 	
 	const std::string sceneFileName = fileName;
@@ -190,7 +197,7 @@ int Renderer::generateImage(const std::string& fileName, QImage& qimagePtr, cons
 	mainCamera.setRotMatrix(mainScene.camera.getRotMatrix());
 	std::cout << "Placed camera at "+std::to_string(cameraPos.x)+" "+std::to_string(cameraPos.y)+" "+std::to_string(cameraPos.z)+"\n";
 
-	if (&animationSegment) {
+	if (&animationSegment && !isAnimation) {
 		mainCamera.truck(animationSegment.getPosition());
 		mainCamera.tilt(animationSegment.getTilt());
 		mainCamera.pan(animationSegment.getPan());
@@ -203,14 +210,19 @@ int Renderer::generateImage(const std::string& fileName, QImage& qimagePtr, cons
 	const double secondsLoading = durationLoading.count() / 1'000'000.0;
 	std::cout << "Loading time: " << secondsLoading << " seconds." << std::endl;
 
-	
-	std::cout << "Loaded " + std::to_string(mainScene.sceneTriangles.size()) + " triangles\n";
-	if (isPreview) {
-		qimagePtr = render("output_" + sceneFileName + ".ppm", mainScene.sceneTriangles, mainCamera, mainScene);
+	if (isAnimation) {
+		animate(fileName, mainCamera, mainScene.sceneTriangles, mainScene, animationFrames);
 	}
 	else {
-		render("output_" + sceneFileName + ".ppm", mainScene.sceneTriangles, mainCamera, mainScene);
+		if (isPreview) {
+			qimagePtr = render("output_" + sceneFileName + ".ppm", mainScene.sceneTriangles, mainCamera, mainScene);
+		}
+		else {
+			render("output_" + sceneFileName + ".ppm", mainScene.sceneTriangles, mainCamera, mainScene);
+		}
 	}
+	std::cout << "Loaded " + std::to_string(mainScene.sceneTriangles.size()) + " triangles\n";
+	
 	
 	std::cout << "Done!\n";
 

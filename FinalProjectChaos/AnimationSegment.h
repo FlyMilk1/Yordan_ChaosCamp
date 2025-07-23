@@ -3,7 +3,7 @@
 #include <vector>
 class AnimationSegment {
 public:
-	AnimationSegment(const vec3& pos, const float& pan, const float& tilt, const int& frame);
+	AnimationSegment(const vec3& pos={0,0,0}, const float& pan=0, const float& tilt=0, const int& frame=0);
 	void calculateFrames(const AnimationSegment& previousSegment);
 	float getPan()const;
 	float getTilt()const;
