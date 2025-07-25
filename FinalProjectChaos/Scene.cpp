@@ -77,6 +77,7 @@ void Scene::loadScene(std::string sceneFileName) {
                 const rapidjson::Value& iorVal = matVal.FindMember("ior")->value;
                 float ior = iorVal.GetFloat();
                 Material tempMat(smoothShadingVal.GetBool(), matType, ior);
+                tempMat.setUseTexture(false);
                 materials.push_back(tempMat);
             }
             else {
@@ -114,9 +115,14 @@ void Scene::loadScene(std::string sceneFileName) {
             const rapidjson::Value& indicesVal = object.FindMember("triangles")->value;
             const rapidjson::Value& uvsVal = object.FindMember("uvs")->value;
             const rapidjson::Value& matIdVal = object.FindMember("material_index")->value;
-           
+            const rapidjson::Value& originVal = object.FindMember("origin")->value;
+            vec3 origin = { 0,0,0 };
+            if (originVal.IsArray()) {
+                origin = loadVector(originVal.GetArray());
+            }
+            
             geometryObjects.push_back(
-                loadMesh(verticesVal.GetArray(), indicesVal.GetArray(), uvsVal, materials[matIdVal.GetInt()])
+                loadMesh(verticesVal.GetArray(), indicesVal.GetArray(), uvsVal, materials[matIdVal.GetInt()],origin)
             );
             
         }
@@ -136,10 +142,15 @@ void Scene::loadScene(std::string sceneFileName) {
             const rapidjson::Value& light = lightsVal[lightId];
             const rapidjson::Value& intensityVal = light.FindMember("intensity")->value;
             const rapidjson::Value& lightPosVal = light.FindMember("position")->value;
+            const rapidjson::Value& lightOriginVal = light.FindMember("origin")->value;
             assert(!lightPosVal.IsNull() && lightPosVal.IsArray());
             vec3 lightPos = loadVector(lightPosVal.GetArray());
+            vec3 origin = { 0,0,0 };
+            if (lightOriginVal.IsArray()) {
+                origin = loadVector(lightOriginVal.GetArray());
+            }
             float intensity = intensityVal.GetFloat();
-            Light tempLight(lightPos, intensity);
+            Light tempLight(lightPos, intensity, origin);
             lights.push_back(tempLight);
         }
     }
@@ -194,7 +205,7 @@ Matrix Scene::loadMatrix(const rapidjson::Value::ConstArray& array) {
     return mat;
 }
 
-Mesh Scene::loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const rapidjson::Value::ConstArray& arrayIndices,  const rapidjson::Value& arrayUVs, const Material& material) {
+Mesh Scene::loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const rapidjson::Value::ConstArray& arrayIndices,  const rapidjson::Value& arrayUVs, const Material& material, const vec3& origin) {
     std::vector<vec3> vertices;
     assert(arrayVertices.Size() % 3 == 0);
 
@@ -226,5 +237,6 @@ Mesh Scene::loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const ra
     tempMesh.setVertices(vertices);
     tempMesh.setMat(material);
     tempMesh.setUvs(uvs);
+    tempMesh.setOrigin(origin);
     return tempMesh;
 }

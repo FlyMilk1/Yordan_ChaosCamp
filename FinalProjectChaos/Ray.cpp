@@ -2,36 +2,45 @@
 #include "Scene.h"
 Ray::Ray(const vec3& origin, const vec3& direction, const std::string& type):
 	origin(origin), dir(direction), type(type){}
-IntersectionData Ray::checkIntersection(const std::vector<triangle>& triangleArray, const Ray& ray, const triangle& ignoreTriangle) {
+IntersectionData Ray::checkIntersection(const std::vector<triangle>& triangleArray, const Ray& ray, const triangle& ignoreTriangle, const float& lightDistance) {
 	float closestT = FLT_MAX;
 	vec3 closestPoint;
 	const triangle* closestTriangle = nullptr;
 	for (int triangleId = 0; triangleId < triangleArray.size(); triangleId++) {
-		if (ray.type == "shadow" && &triangleArray[triangleId] == &ignoreTriangle) {
-			continue;
-		}
+		
+
 		const triangle& tri = triangleArray[triangleId];
 		vec3 n = tri.normalVec;
-
+		
 		float rProj = dot(n, ray.dir);
 		if (fabs(rProj) < 1e-6f) continue;
-
+		if (ray.type == "shadow") {
+			if (tri.material.getType() == "refractive") {
+				continue;
+			}
+			if (&tri == &ignoreTriangle) {
+				continue;
+			}
+			if (dot(n, ray.dir) > 0) continue;
+			
+		}
+		
 		float t = dot(n, (tri.v0 - ray.origin)) / rProj;
-		if (t <= 0) continue;
-
+		if (t <= EPSILON) continue;
+		
 		vec3 p = ray.origin + ray.dir * t;
 
 
 		vec3 e0 = (tri.v1 - tri.v0);
 		vec3 e1 = (tri.v2 - tri.v1);
 		vec3 e2 = (tri.v0 - tri.v2);
-
+		
 		if (
-			dot(n, cross(e0, (p - tri.v0))) >= 0 &&
-			dot(n, cross(e1, (p - tri.v1))) >= 0 &&
-			dot(n, cross(e2, (p - tri.v2))) >= 0
+			dot(n, cross(e0, (p - tri.v0))) >= -EPSILON &&
+			dot(n, cross(e1, (p - tri.v1))) >= -EPSILON &&
+			dot(n, cross(e2, (p - tri.v2))) >= -EPSILON
 			) {
-			if (ray.type == "shadow") {
+			if (ray.type == "shadow" && t < lightDistance - EPSILON) {
 				return { true,t,p, &tri };
 			}
 			if (t < closestT) {
@@ -43,9 +52,12 @@ IntersectionData Ray::checkIntersection(const std::vector<triangle>& triangleArr
 
 
 	}
-	if (closestTriangle) {
+	if (closestTriangle && ray.type!="shadow") {
 		return { true,closestT,closestPoint, closestTriangle };
 	}
+	
+	return { false,0,{0,0,0}, nullptr };
+	
 
 }
 vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ray, const Scene& scene, const int& rayDepth) {
@@ -78,6 +90,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 		}
 		else {
 			surfaceColor = tri.material.getAlbedo();
+			
 		}
 		if (materialType == "diffuse") {
 			if (tri.material.getSmooth()) {
@@ -95,10 +108,10 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 				std::cout << "Invalid normal!" << std::endl;
 			}
 
-			vec3 shaded = shade(closestPoint, scene, *closestTriangle, scene.sceneTriangles, normalForShading, surfaceColor);
+			vec3 shaded = shade(closestPoint, scene, *closestTriangle,  normalForShading, surfaceColor);
 			
 			
-			outputColor = shaded*surfaceColor;
+			outputColor = shaded;
 
 
 		}
@@ -116,7 +129,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 				vec3 R = I - N * dot(I, N) * 2;
 				normalizeVector(R);
 				Ray reflectedRay = { closestPoint + N * REFRACTION_BIAS,R };
-				outputColor = getAlbedoRay(scene.sceneTriangles, reflectedRay, scene, rayDepth+1);
+				outputColor = getAlbedoRay(scene.accTree.traverse(reflectedRay), reflectedRay, scene, rayDepth+1);
 			}
 		}
 		else if (materialType == "refractive") {
@@ -180,8 +193,8 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 
 					Ray refractedRay = { closestPoint + ((N * (-1.0f)) * REFRACTION_BIAS), R };
 					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N * dotIN * 2 };
-					vec3 outputColorReflection = getAlbedoRay(scene.sceneTriangles, reflectedRay, scene, rayDepth + 1);
-					vec3 outputColorRefraction = getAlbedoRay(scene.sceneTriangles, refractedRay, scene, rayDepth + 1);
+					vec3 outputColorReflection = getAlbedoRay(scene.accTree.traverse(reflectedRay), reflectedRay, scene, rayDepth + 1);
+					vec3 outputColorRefraction = getAlbedoRay(scene.accTree.traverse(refractedRay), refractedRay, scene, rayDepth + 1);
 
 					//using Schlick's aproximation
 					float cosTheta = fabs(dotIN);
@@ -201,7 +214,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 					vec3 R = I - N * dot(I, N) * 2;
 					normalizeVector(R);
 					Ray reflectedRay = { closestPoint + N * REFRACTION_BIAS,R };
-					outputColor = getAlbedoRay(scene.sceneTriangles, reflectedRay, scene, rayDepth + 1);
+					outputColor = getAlbedoRay(scene.accTree.traverse(reflectedRay), reflectedRay, scene, rayDepth + 1);
 
 					//outputColor = { 0,0,1 };
 				}
@@ -218,7 +231,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 
 	return outputColor;
 }
-vec3 Ray::shade(const vec3& p, const Scene& scene, const triangle& checkedTriangle, const std::vector<triangle>& triangleArray, const vec3& normal, const vec3& albedo) {
+vec3 Ray::shade(const vec3& p, const Scene& scene, const triangle& checkedTriangle, const vec3& normal, const vec3& albedo) {
 	const std::vector<Light>& lights = scene.lights;
 	float result = 0;
 	//std::cout << "Normal: " << normal.x << " " << normal.y << " " << normal.z << "\n";
@@ -230,10 +243,12 @@ vec3 Ray::shade(const vec3& p, const Scene& scene, const triangle& checkedTriang
 		vec3 lightDir = (lights[lightId].getPosition() - p);
 		float sr = length(lightDir);
 		normalizeVector(lightDir);
+		
 		float cosLaw = std::max(0.0f, dot(normal, lightDir));
+
 		float sa = 4 * pi * sr * sr;
 		Ray shadowRay = { (p + (normal * SHADOW_BIAS)), lightDir, "shadow" };
-		IntersectionData interData = checkIntersection(triangleArray,  shadowRay, checkedTriangle);
+		IntersectionData interData = checkIntersection(scene.accTree.traverse(shadowRay), shadowRay, checkedTriangle, sr);
 		float formula = interData.hasIntersection() ? 0 : lights[lightId].getLightIntensity() / sa * cosLaw;
 
 		result += formula;

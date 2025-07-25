@@ -36,44 +36,29 @@ void AABB::vec3ToArray(float* array, const vec3& vec)const{
 }
 bool AABB::checkSides(const Ray ray, float& tHit)const
 {
-	float boxMin[] = { minPoint.x, minPoint.y, minPoint.z };
-	float boxMax[] = { maxPoint.x, maxPoint.y, maxPoint.z };
-
-	float rayOrigin[] = { ray.origin.x,ray.origin.y,ray.origin.z };
-	float rayDir[] = { ray.dir.x,ray.dir.y,ray.dir.z };
-
-	float tMin = FLT_MAX;
-	for (int axis = 0; axis < 3; ++axis) {
-		for (int side = 0; side < 2; ++side) {
-			float plane = (side == 0) ? boxMin[axis] : boxMax[axis];
-
-			if (std::abs(rayDir[axis]) < EPSILON) continue;
-
-			float t = (plane - rayOrigin[axis]) / rayDir[axis];
-			if (t < EPSILON) continue;
-
-			vec3 p = arrayToVec3(rayOrigin) + arrayToVec3(rayDir) * t;
-			float pArray[3];
-			vec3ToArray(pArray, p);
-
-			int axis1 = (axis + 1) % 3;
-			int axis2 = (axis + 2) % 3;
-
-			if (pArray[axis1] >= boxMin[axis1] - EPSILON && pArray[axis1] <= boxMax[axis1] + EPSILON &&
-			pArray[axis2] >= boxMin[axis2] - EPSILON && pArray[axis2] <= boxMax[axis2] + EPSILON &&
-			pArray[axis]  >= boxMin[axis]  - EPSILON && pArray[axis]  <= boxMax[axis]  + EPSILON) {
-				if (t < tMin) {
-					tMin = t;
-				}
-			}
-		}
-
+	float tmin = -FLT_MAX;
+	float tmax = FLT_MAX;
+	float minBox[3];
+	float maxBox[3];
+	float origin[3];
+	float dir[3];
+	vec3ToArray(minBox, minPoint);
+	vec3ToArray(maxBox, maxPoint);
+	vec3ToArray(origin, ray.origin);
+	vec3ToArray(dir, ray.dir);
+	for (int i = 0; i < 3; ++i) {
+		float invD = (fabs(dir[i]) > EPSILON) ? 1.0f / dir[i] : EPSILON;
+		float t0 = (minBox[i] - origin[i]) * invD;
+		float t1 = (maxBox[i] - origin[i]) * invD;
+		if (invD < 0.0f) std::swap(t0, t1);
+		tmin = std::max(tmin, t0);
+		tmax = std::min(tmax, t1);
+		if (tmax < tmin)
+			return false;
 	}
-	if (tMin < FLT_MAX) {
-        tHit = tMin;
-        return true;
-    }
-    return false;
+
+	tHit = tmin;
+	return true;
 
 }
 

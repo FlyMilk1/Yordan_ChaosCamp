@@ -41,6 +41,6 @@ private:
     rapidjson::Document loadDocument(std::string fileName);
     static vec3 loadVector(const rapidjson::Value::ConstArray& array);
     Matrix loadMatrix(const rapidjson::Value::ConstArray& array);
-    Mesh loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const rapidjson::Value::ConstArray& arrayIndices, const rapidjson::Value& arrayUVs, const Material& material);
+    Mesh loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const rapidjson::Value::ConstArray& arrayIndices, const rapidjson::Value& arrayUVs, const Material& material, const vec3& origin={0,0,0});
     std::vector<Texture> textures;
 };

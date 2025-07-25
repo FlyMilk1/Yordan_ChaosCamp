@@ -1,6 +1,7 @@
 #pragma once
 #include "yordancrt.h"
 #include <QImage>
+
 typedef unsigned  char uc;
 static const uc maxColorComponent = 255;
 static const int channels = 3;
@@ -15,7 +16,7 @@ static std::vector<AnimationSegment> defalutAnimVector(0);
 class Renderer {
 public:
 	
-	int generateImage(const std::string& fileName, QImage& qimagePtr = defaultImage, const int& customWidth = -1, const int& customHeight = -1, const bool& isAnimation=false, const AnimationSegment& animationSegment = AnimationSegment(), const std::vector<AnimationSegment> animationFrames = defalutAnimVector);
+	void generateImage(const std::string& fileName, QImage& qimagePtr = defaultImage, const int& customWidth = -1, const int& customHeight = -1, const bool& isAnimation=false, const AnimationSegment& animationSegment = AnimationSegment(), const std::vector<AnimationSegment> animationFrames = defalutAnimVector);
 	
 private:
 	
@@ -29,8 +30,10 @@ private:
 	void renderBucket(const std::vector<triangle>& triangleArray, Camera& camera, const Scene& scene, std::stack<Bucket>& buckets, std::mutex& bucketMutex);
 	QImage render(const std::string& fileName, const std::vector<triangle>& triangles, Camera& camera, const Scene& scene);
 	void animate(const std::string& fileName, Camera& camera, const std::vector<triangle>& triangles, const Scene& scene, const std::vector<AnimationSegment>& segmentArray);
-
-
+	static float luminance(float r, float g, float b);
+	static float getLuminance(const float * frameBuffer, const int& width, const int& height, const int& x, const int& y);
+	static void getRGB(const float* frame, int width, int height, int x, int y, float& r, float& g, float& b);
+	static void fxaaAlbedoFrame(float* inputFrame, int width, int height);
 	QImage framebufferToQImage(float* framebuffer, int width, int height);
 	float* framebuffer;
 	bool isPreview=false;

@@ -1,6 +1,7 @@
 //Yordan Yonchev - Chaos Raytracing course
 //Raytracing of triangles with camera movement, animation, lightning, materials, refraction, reflection, textures and scene representation
 #include "Renderer.h"
+
 QImage defaultImage;
 
 Color Renderer::albedoToRGB(const vec3& albedo){
@@ -63,6 +64,7 @@ void Renderer::renderBucket(const std::vector<triangle>& triangleArray, Camera& 
                 framebuffer[pixelIndex + 2] = albedoPixel.z;
             }
         }
+
     }
 }
 QImage Renderer::render(const std::string & fileName, const std::vector<triangle>& triangles,Camera& camera,const Scene& scene) {
@@ -73,7 +75,7 @@ QImage Renderer::render(const std::string & fileName, const std::vector<triangle
 	std::stack<Bucket> buckets = Bucket::generateBuckets(scene.settings.resolution.width, scene.settings.resolution.height, scene.settings.bucketSize);
 	std::mutex bucketMutex;
 	std::vector<std::thread> threads;
-
+	
 	for (int threadIdx = 0; threadIdx < processor_count; threadIdx++) {
 		
 		threads.emplace_back(&Renderer::renderBucket, this, std::ref(triangles), std::ref(camera), std::ref(scene), std::ref(buckets), std::ref(bucketMutex));
@@ -82,7 +84,7 @@ QImage Renderer::render(const std::string & fileName, const std::vector<triangle
 	for (auto& thread : threads) thread.join();
 
 	
-	
+	fxaaAlbedoFrame(framebuffer, scene.settings.resolution.width, scene.settings.resolution.height);
 	
 	if (isPreview) {
 		return framebufferToQImage(framebuffer, scene.settings.resolution.width, scene.settings.resolution.height);
@@ -147,6 +149,68 @@ void Renderer::animate(const std::string& fileName, Camera& camera,const std::ve
 	
 }
 
+float Renderer::luminance(float r, float g, float b)
+{
+	return 0.299f * r + 0.587f * g + 0.114f * b; // Standard Rec. 601
+}
+
+float Renderer::getLuminance(const float * frameBuffer, const int& width, const int& height, const int& x, const int& y)
+{
+	int idx = (y * width + x) * channels;
+	return luminance(frameBuffer[idx], frameBuffer[idx + 1], frameBuffer[idx + 2]);
+}
+void Renderer::getRGB(const float* frame, int width, int height, int x, int y, float& r, float& g, float& b) {
+	int idx = (y * width + x) * channels;
+	r = frame[idx];
+	g = frame[idx + 1];
+	b = frame[idx + 2];
+}
+void Renderer::fxaaAlbedoFrame(float* inputFrame, int width, int height) {
+	for (int y = 1; y < height - 1; ++y) {
+		for (int x = 1; x < width - 1; ++x) {
+			// Luminance samples
+			float lumaM = getLuminance(inputFrame, width, height, x, y);
+			float lumaNW = getLuminance(inputFrame, width, height, x - 1, y - 1);
+			float lumaNE = getLuminance(inputFrame, width, height, x + 1, y - 1);
+			float lumaSW = getLuminance(inputFrame, width, height, x - 1, y + 1);
+			float lumaSE = getLuminance(inputFrame, width, height, x + 1, y + 1);
+
+			float lumaMin = std::min({ lumaM, lumaNW, lumaNE, lumaSW, lumaSE });
+			float lumaMax = std::max({ lumaM, lumaNW, lumaNE, lumaSW, lumaSE });
+
+			float range = lumaMax - lumaMin;
+			int idx = (y * width + x) * 3;
+
+			if (range < 1e-4f) {
+				
+				continue;
+			}
+
+			float edgeH = std::abs(lumaNW + lumaNE - lumaSW - lumaSE);
+			float edgeV = std::abs(lumaNW + lumaSW - lumaNE - lumaSE);
+			bool horizontal = edgeH >= edgeV;
+
+			float r1, g1, b1, r2, g2, b2;
+			if (horizontal) {
+				getRGB(inputFrame, width, height, x, y - 1, r1, g1, b1);
+				getRGB(inputFrame, width, height, x, y + 1, r2, g2, b2);
+			}
+			else {
+				getRGB(inputFrame, width, height, x - 1, y, r1, g1, b1);
+				getRGB(inputFrame, width, height, x + 1, y, r2, g2, b2);
+			}
+
+			float rM = inputFrame[idx];
+			float gM = inputFrame[idx + 1];
+			float bM = inputFrame[idx + 2];
+
+			
+			inputFrame[idx] = (r1 + r2 + rM) / 3.0f;
+			inputFrame[idx + 1] = (g1 + g2 + gM) / 3.0f;
+			inputFrame[idx + 2] = (b1 + b2 + bM) / 3.0f;
+		}
+	}
+}
 QImage Renderer::framebufferToQImage(float* framebuffer, int width, int height) {
     if (!framebuffer || width <= 0 || height <= 0)
         return QImage();
@@ -175,9 +239,9 @@ QImage Renderer::framebufferToQImage(float* framebuffer, int width, int height) 
 }
 
 
-int Renderer::generateImage(const std::string& fileName, QImage& qimagePtr, const int& customWidth, const int& customHeight, const bool& isAnimation, const AnimationSegment& animationSegment, const std::vector<AnimationSegment> animationFrames)
+void Renderer::generateImage(const std::string& fileName, QImage& qimagePtr, const int& customWidth, const int& customHeight, const bool& isAnimation, const AnimationSegment& animationSegment, const std::vector<AnimationSegment> animationFrames)
 {
-
+	
 	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 	
 	const std::string sceneFileName = fileName;
@@ -230,6 +294,7 @@ int Renderer::generateImage(const std::string& fileName, QImage& qimagePtr, cons
 	std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 	const double seconds = duration.count() / 1'000'000.0;
 	std::cout << "Execution time: " << seconds << " seconds." << std::endl;
-	return 0;
+	
 }
+
 

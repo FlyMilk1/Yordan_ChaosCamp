@@ -1,0 +1,37 @@
+
+ {
+      "intensity": 2000,
+	  "origin": [30,0,0],
+      "position": [
+        9,
+        7,
+        0
+      ]
+    },
+    {
+      "intensity": 2000,
+	  "origin": [30,0,0],
+      "position": [
+        -9,
+        16,
+        0
+      ]
+    },
+    {
+      "intensity": 500,
+	  "origin": [30,0,0],
+      "position": [
+        0,
+        9,
+        7.5
+      ]
+    },
+    {
+      "intensity": 500,
+	  "origin": [30,0,0],
+      "position": [
+        0,
+        9,
+        -7.5
+      ]
+    }

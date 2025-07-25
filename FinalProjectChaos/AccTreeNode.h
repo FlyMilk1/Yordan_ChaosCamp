@@ -2,7 +2,7 @@
 #include "AABB.h"
 #include "Ray.h"
 const int maxDepth = 16;
-const int maxTriangles = 2;
+const int maxTriangles = 5;
 struct AccTreeNode {
 	AccTreeNode(const AABB& aabb, const int leftNodeIdx, const int rightNodeIdx);
 	

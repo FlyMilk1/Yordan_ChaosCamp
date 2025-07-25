@@ -7,9 +7,9 @@ void Mesh::addTriangles(std::vector<triangle>& triangleArray) {
 	if (uvs.size() > 0) {
 		for (int firstIndex = 0; firstIndex <= triangleVertIndices.size() - 2; firstIndex += 3) {
 			triangle tempTriangle(
-				vertices[triangleVertIndices[firstIndex]],
-				vertices[triangleVertIndices[firstIndex + 1]],
-				vertices[triangleVertIndices[firstIndex + 2]],
+				vertices[triangleVertIndices[firstIndex]]+origin,
+				vertices[triangleVertIndices[firstIndex + 1]] + origin,
+				vertices[triangleVertIndices[firstIndex + 2]] + origin,
 				uvs[triangleVertIndices[firstIndex]],
 				uvs[triangleVertIndices[firstIndex + 1]],
 				uvs[triangleVertIndices[firstIndex + 2]],
@@ -21,10 +21,10 @@ void Mesh::addTriangles(std::vector<triangle>& triangleArray) {
 	else {
 		for (int firstIndex = 0; firstIndex <= triangleVertIndices.size() - 2; firstIndex += 3) {
 			triangle tempTriangle(
-				vertices[triangleVertIndices[firstIndex]],
-				vertices[triangleVertIndices[firstIndex + 1]],
-				vertices[triangleVertIndices[firstIndex + 2]],
-				{0,0,0}, { 0,0,0 }, { 0,0,0 },
+				vertices[triangleVertIndices[firstIndex]] + origin,
+				vertices[triangleVertIndices[firstIndex + 1]] + origin,
+				vertices[triangleVertIndices[firstIndex + 2]] + origin,
+				{0,0,0}, { 1,0,0 }, { 0,1,0 },
 				material
 			);
 			tempTriangleArray.push_back(tempTriangle);
@@ -103,15 +103,19 @@ void Mesh::addTriangles(std::vector<triangle>& triangleArray) {
     triangleArray.insert(triangleArray.end(), tempTriangleArray.begin(), tempTriangleArray.end());
 }
 
-void Mesh::setVertices(std::vector<vec3> vecArr) {
+void Mesh::setVertices(const std::vector<vec3>& vecArr) {
     vertices = vecArr;
 }
 
-void Mesh::setIndices(std::vector<int> indicesArr) {
+void Mesh::setIndices(const std::vector<int>& indicesArr) {
     triangleVertIndices = indicesArr;
 }
-void Mesh::setUvs(std::vector<vec3> uvArr) {
+void Mesh::setUvs(const std::vector<vec3>& uvArr) {
 	uvs = uvArr;
+}
+void Mesh::setOrigin(const vec3& newOrigin)
+{
+	origin = newOrigin;
 }
 void Mesh::setMat(const Material& newMaterial) {
     material = newMaterial;

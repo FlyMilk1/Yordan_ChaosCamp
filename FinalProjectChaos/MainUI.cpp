@@ -9,6 +9,7 @@ MainUI::MainUI(QWidget *parent)
     connect(ui.standardResCheck, &QCheckBox::checkStateChanged, this, &MainUI::setToStandartResolution);
     connect(ui.animateButton, &QPushButton::clicked, this, &MainUI::generateAnimation);
     connect(ui.singleButton, &QPushButton::clicked, this, &MainUI::generateImage);
+    connect(ui.resetButton, &QPushButton::clicked, this, &MainUI::resetAnimation);
 }
 
 MainUI::~MainUI()
@@ -45,6 +46,8 @@ void MainUI::addFrames() {
 
 void MainUI::previewFrame()
 {
+    ui.loadingLabel->setText(loadingStr);
+    QCoreApplication::processEvents();
     QString filePath = ui.filePath->toPlainText();
     QImage previewFrame;
 
@@ -72,8 +75,10 @@ void MainUI::previewFrame()
     AnimationSegment newSegment = getAnimationSegment();
 
     Renderer renderer;
+    
     renderer.generateImage(filePath.toStdString(), previewFrame, width, height, false, newSegment);
     ui.imageLabel->setPixmap(QPixmap::fromImage(previewFrame));
+    ui.loadingLabel->setText(doneStr);
 }
 
 void MainUI::setToStandartResolution()
@@ -97,4 +102,9 @@ void MainUI::generateImage()
     QString filePath = ui.filePath->toPlainText();
     Renderer renderer;
     renderer.generateImage(filePath.toStdString(), previewFrame, -1, -1, false, newSegment, animationFrames);
+}
+
+void MainUI::resetAnimation()
+{
+    animationFrames.clear();
 }
