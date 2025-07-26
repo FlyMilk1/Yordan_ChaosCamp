@@ -37,3 +37,8 @@ std::vector<AnimationSegment> AnimationSegment::getInterpolation()const
 {
 	return interpolationFromLast;
 }
+
+void AnimationSegment::addToInterpolation(const AnimationSegment& animSeg)
+{
+	interpolationFromLast.push_back(animSeg);
+}

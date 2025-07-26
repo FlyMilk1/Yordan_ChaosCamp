@@ -1,0 +1,63 @@
+﻿  AABB.cpp
+D:\repos\Chaos\Homework13\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'AABB.cpp')
+  
+D:\repos\Chaos\Homework13\Ray.h(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'AABB.cpp')
+  
+  AccTreeNode.cpp
+D:\repos\Chaos\Homework13\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'AccTreeNode.cpp')
+  
+D:\repos\Chaos\Homework13\Ray.h(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'AccTreeNode.cpp')
+  
+  Bucket.cpp
+  Camera.cpp
+  IntersectionData.cpp
+  Light.cpp
+  MainProgram.cpp
+\MainProgram.cpp(1,1): error C1083: Cannot open source file: 'MainProgram.cpp': No such file or directory
+  (compiling source file '/MainProgram.cpp')
+  
+  Material.cpp
+  Math.cpp
+  Matrix.cpp
+  Mesh.cpp
+D:\repos\Chaos\Homework13\Mesh.cpp(84,78): warning C4244: 'argument': conversion from 'unsigned __int64' to 'const float', possible loss of data
+D:\repos\Chaos\Homework13\Mesh.cpp(89,78): warning C4244: 'argument': conversion from 'unsigned __int64' to 'const float', possible loss of data
+D:\repos\Chaos\Homework13\Mesh.cpp(94,78): warning C4244: 'argument': conversion from 'unsigned __int64' to 'const float', possible loss of data
+  Ray.cpp
+D:\repos\Chaos\Homework13\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Ray.cpp')
+  
+D:\repos\Chaos\Homework13\Ray.h(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Ray.cpp')
+  
+D:\repos\Chaos\Homework13\AccTree.h(10,25): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'Ray.cpp')
+  
+D:\repos\Chaos\Homework13\Ray.cpp(227,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Scene.cpp
+D:\repos\Chaos\Homework13\Ray.h(7,27): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Scene.cpp')
+  
+D:\repos\Chaos\Homework13\Ray.h(8,31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'Scene.cpp')
+  
+D:\repos\Chaos\Homework13\AccTree.h(10,25): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'Scene.cpp')
+  
+D:\repos\Chaos\Homework13\Scene.cpp(36,35): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(71,35): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(111,35): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(135,39): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(201,29): warning C4018: '<=': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(210,29): warning C4018: '<=': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(220,31): warning C4018: '<': signed/unsigned mismatch
+  Texture.cpp
+  triangle.cpp
+  vec3.cpp
+  Generating Code...
+D:\repos\Chaos\Homework13\Texture.cpp(86,1): warning C4715: 'Texture::getAlbedo': not all control paths return a value
+D:\repos\Chaos\Homework13\Ray.cpp(50,1): warning C4715: 'Ray::checkIntersection': not all control paths return a value

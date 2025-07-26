@@ -33,6 +33,7 @@ AnimationSegment MainUI::getAnimationSegment() {
 void MainUI::addFrames() {
     AnimationSegment newSegment = getAnimationSegment();
     if (firstTime) {
+        newSegment.addToInterpolation(newSegment);
         animationFrames.push_back(newSegment);
         previousSegment = newSegment;
         firstTime = false;
@@ -46,6 +47,7 @@ void MainUI::addFrames() {
 
 void MainUI::previewFrame()
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     ui.loadingLabel->setText(loadingStr);
     QCoreApplication::processEvents();
     QString filePath = ui.filePath->toPlainText();
@@ -79,6 +81,7 @@ void MainUI::previewFrame()
     renderer.generateImage(filePath.toStdString(), previewFrame, width, height, false, newSegment);
     ui.imageLabel->setPixmap(QPixmap::fromImage(previewFrame));
     ui.loadingLabel->setText(doneStr);
+    QApplication::restoreOverrideCursor();
 }
 
 void MainUI::setToStandartResolution()
@@ -88,20 +91,30 @@ void MainUI::setToStandartResolution()
 
 void MainUI::generateAnimation()
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    ui.loadingLabel->setText(loadingStr);
+    QCoreApplication::processEvents();
     QImage previewFrame;
     AnimationSegment newSegment = getAnimationSegment();
     QString filePath = ui.filePath->toPlainText();
     Renderer renderer;
     renderer.generateImage(filePath.toStdString(), previewFrame, -1, -1, true, newSegment, animationFrames);
+    ui.loadingLabel->setText(doneStr);
+    QApplication::restoreOverrideCursor();
 }
 
 void MainUI::generateImage()
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    ui.loadingLabel->setText(loadingStr);
+    QCoreApplication::processEvents();
     QImage previewFrame;
     AnimationSegment newSegment = getAnimationSegment();
     QString filePath = ui.filePath->toPlainText();
     Renderer renderer;
     renderer.generateImage(filePath.toStdString(), previewFrame, -1, -1, false, newSegment, animationFrames);
+    ui.loadingLabel->setText(doneStr);
+    QApplication::restoreOverrideCursor();
 }
 
 void MainUI::resetAnimation()

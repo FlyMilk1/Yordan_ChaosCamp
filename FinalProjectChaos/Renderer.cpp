@@ -124,7 +124,7 @@ void Renderer::animate(const std::string& fileName, Camera& camera,const std::ve
 			if (!std::filesystem::exists(folderPath)) {
 				std::filesystem::create_directories(folderPath);  // also creates parent folders
 			}
-			const std::string frameName = "animation/frame_" + std::to_string(frameCount++) + ".ppm";
+			const std::string frameName = "animation/frame_" + std::to_string((frameCount++)) + ".ppm";
 			std::ofstream ppmFileStream(frameName, std::ios::out | std::ios::binary);
 			ppmFileStream << "P3\n";
 			ppmFileStream << scene.settings.resolution.width << " " << scene.settings.resolution.height << "\n";

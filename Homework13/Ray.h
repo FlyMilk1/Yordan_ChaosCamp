@@ -4,11 +4,11 @@
 #include "IntersectionData.h"
 #include <vector>
 #include "Math.h"
-const float SHADOW_BIAS = 1e-3;
-const float REFRACTION_BIAS = 1e-3;
+const float SHADOW_BIAS = 1e-3f;
+const float REFRACTION_BIAS = 1e-3f;
 const float REFRACTION_DEPTH = 5;
 const double pi = 3.14159265358979323846;
-const float EPSILON = 1e-6f;
+const float EPSILON = 1e-3f;
 class Scene;
 class Ray {
 public:

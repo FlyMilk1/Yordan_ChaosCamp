@@ -95,7 +95,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 				std::cout << "Invalid normal!" << std::endl;
 			}
 
-			vec3 shaded = shade(closestPoint, scene, *closestTriangle, triangleArray, normalForShading, surfaceColor);
+			vec3 shaded = shade(closestPoint, scene, *closestTriangle, scene.sceneTriangles, normalForShading, surfaceColor);
 			
 			
 			outputColor = shaded*surfaceColor;
@@ -108,7 +108,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 				vec3 R = A - (tri.normalVec * dot(A, tri.normalVec)) * 2;
 				normalizeVector(R);
 				Ray reflectedRay = { closestPoint + tri.normalVec * EPSILON,R };
-				outputColor = getAlbedoRay(triangleArray, reflectedRay, scene, rayDepth + 1);
+				outputColor = getAlbedoRay(scene.accTree.traverse(reflectedRay), reflectedRay, scene, rayDepth + 1);
 				outputColor = outputColor * surfaceColor;
 			}
 		}
@@ -173,8 +173,8 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 
 					Ray refractedRay = { closestPoint + ((N * (-1.0f)) * REFRACTION_BIAS), R };
 					Ray reflectedRay = { (closestPoint + (N * REFRACTION_BIAS)), I - N * dotIN * 2 };
-					vec3 outputColorReflection = getAlbedoRay(triangleArray, reflectedRay, scene, rayDepth + 1);
-					vec3 outputColorRefraction = getAlbedoRay(triangleArray, refractedRay, scene, rayDepth + 1);
+					vec3 outputColorReflection = getAlbedoRay(scene.accTree.traverse(reflectedRay), reflectedRay, scene, rayDepth + 1);
+					vec3 outputColorRefraction = getAlbedoRay(scene.accTree.traverse(refractedRay), refractedRay, scene, rayDepth + 1);
 
 					//using Schlick's aproximation
 					float cosTheta = fabs(dotIN);
@@ -194,7 +194,7 @@ vec3 Ray::getAlbedoRay(const std::vector<triangle>& triangleArray, const Ray& ra
 					vec3 R = I - N * dot(I, N) * 2;
 					normalizeVector(R);
 					Ray reflectedRay = { closestPoint + N * REFRACTION_BIAS,R };
-					outputColor = getAlbedoRay(triangleArray, reflectedRay, scene, rayDepth + 1);
+					outputColor = getAlbedoRay(scene.accTree.traverse(reflectedRay), reflectedRay, scene, rayDepth + 1);
 
 					//outputColor = { 0,0,1 };
 				}
@@ -226,7 +226,7 @@ vec3 Ray::shade(const vec3& p, const Scene& scene, const triangle& checkedTriang
 		float cosLaw = std::max(0.0f, dot(normal, lightDir));
 		float sa = 4 * pi * sr * sr;
 		Ray shadowRay = { (p + (normal * SHADOW_BIAS)), lightDir, "shadow" };
-		IntersectionData interData = checkIntersection(triangleArray,  shadowRay, checkedTriangle);
+		IntersectionData interData = checkIntersection(scene.accTree.traverse(shadowRay),  shadowRay, checkedTriangle);
 		float formula = interData.hasIntersection() ? 0 : lights[lightId].getLightIntensity() / sa * cosLaw;
 
 		result += formula;

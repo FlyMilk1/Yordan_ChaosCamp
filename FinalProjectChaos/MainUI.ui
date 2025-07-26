@@ -447,7 +447,7 @@
    </palette>
   </property>
   <property name="windowTitle">
-   <string>MainUI</string>
+   <string>Yordan's RT Animator 30000</string>
   </property>
   <property name="toolTip">
    <string/>
@@ -1338,6 +1338,12 @@
         </property>
         <property name="text">
          <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap>textures/logo.png</pixmap>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>

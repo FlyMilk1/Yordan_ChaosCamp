@@ -1,0 +1,35 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(524,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+  AABB.cpp
+  AccTreeNode.cpp
+  MainProgram.cpp
+D:\repos\Chaos\Homework13\AccTree.h(10,25): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'MainProgram.cpp')
+  
+D:\repos\Chaos\Homework13\MainProgram.cpp(25,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework13\MainProgram.cpp(26,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework13\MainProgram.cpp(31,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework13\MainProgram.cpp(32,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\repos\Chaos\Homework13\MainProgram.cpp(91,36): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\MainProgram.cpp(131,24): warning C4018: '<': signed/unsigned mismatch
+  Ray.cpp
+D:\repos\Chaos\Homework13\AccTree.h(10,25): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'Ray.cpp')
+  
+D:\repos\Chaos\Homework13\Ray.cpp(227,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Scene.cpp
+D:\repos\Chaos\Homework13\AccTree.h(10,25): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'Scene.cpp')
+  
+D:\repos\Chaos\Homework13\Scene.cpp(36,35): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(71,35): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(111,35): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(135,39): warning C4018: '<': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(201,29): warning C4018: '<=': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(210,29): warning C4018: '<=': signed/unsigned mismatch
+D:\repos\Chaos\Homework13\Scene.cpp(220,31): warning C4018: '<': signed/unsigned mismatch
+  Generating code
+  2 of 1599 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    15 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Homework13.vcxproj -> D:\repos\Chaos\Homework13\x64\Release\Homework13.exe
