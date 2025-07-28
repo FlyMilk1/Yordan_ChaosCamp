@@ -1,5 +1,6 @@
 //Yordan Yonchev - Chaos Raytracing course
-//Raytracing of triangles with camera movement, animation, lightning, materials, refraction, reflection, textures and scene representation
+//Raytracing of triangles with camera movement, animation, lightning, materials, refraction, 
+//reflection, textures,scene representation and FXAA
 #include "Renderer.h"
 
 QImage defaultImage;
