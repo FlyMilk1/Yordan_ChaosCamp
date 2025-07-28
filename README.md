@@ -19,4 +19,4 @@ The final project is a ray tracing application with the following highlights:
 **Final project build for Windows:**  
 [➡️ Download here](https://drive.google.com/file/d/19vXJcpIW4CEaTfXhmylffmbrqmzodtxI/view?usp=sharing)
 
-![Demo Animation](yordananimation.gif)
+![Demo Animation](FinalProjectChaos/yordananimation.gif)
