@@ -1,0 +1,6 @@
+Exectuon time in every stage of optimization:
+1.Initial Debug (single thread): 	1491.88 s
+2.Initial Release (single thread): 	 134.06 s	(~11.1 speedup)
+3.Region rendering (24 threads):      19.46 s	(~6.9 speedup)
+4.Bucket rendering (24 threads): 	   9.46 s	(~2.1 speedup)
+5.Bucket + AABB (24 threads):	       5.73 s	(~1.7 speedup)
