@@ -1,3 +1,0 @@
-I made this 3D model of a game boss mainly with sculpting tools from Blender and then added a Rig to the model that made living creature like animation possible.
-As this model was used in a game developed by a team that I lead, I used procedural materials from Adobe Substance Painter for a realistic look.
-The materials where then applied in the game engine Unity.

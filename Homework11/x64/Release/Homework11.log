@@ -1,9 +1,0 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
-  Texture.cpp
-  Generating code
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-D:\repos\Chaos\Homework11\Texture.cpp(87): warning C4715: 'Texture::getAlbedo': not all control paths return a value
-D:\repos\Chaos\Homework11\Ray.cpp(49): warning C4715: 'Ray::checkIntersection': not all control paths return a value
-  All 1167 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  Finished generating code
-  Homework11.vcxproj -> D:\repos\Chaos\Homework11\x64\Release\Homework11.exe
