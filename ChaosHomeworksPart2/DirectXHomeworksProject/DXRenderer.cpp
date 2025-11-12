@@ -1,7 +1,12 @@
 #include "DXRenderer.h"
 
-void DXRenderer::render()
+void DXRenderer::render(const FLOAT* RGBAcolor)
 {
+	prepareForRendering();
+	DXResource resource;
+	resource.CreateRenderTarget(device, &CPUDescriptorHandle);
+	graphicsCommandList->OMSetRenderTargets(0, &CPUDescriptorHandle, FALSE, nullptr);
+	graphicsCommandList->ClearRenderTargetView(CPUDescriptorHandle, RGBAcolor, 0, NULL);
 }
 
 void DXRenderer::prepareForRendering()

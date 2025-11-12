@@ -4,11 +4,14 @@
 
 #include <d3d12.h>
 #pragma comment(lib, "d3d12.lib")
+
+#include "DXResource.h"
+
 #include <assert.h>
 #include <iostream>
 class DXRenderer {
 public: //Public Functions
-	void render();
+	void render(const FLOAT* RGBAcolor);
 private: //Private Functions
 	/// <summary>
 	/// Create the necessary DirectX infrastructure and rendering resources
@@ -33,4 +36,7 @@ private:
 	ID3D12CommandQueue* commandQueue = nullptr;
 	ID3D12CommandAllocator* commandAllocator = nullptr;
 	ID3D12GraphicsCommandList1* graphicsCommandList = nullptr;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandle = {};
+	
 };
