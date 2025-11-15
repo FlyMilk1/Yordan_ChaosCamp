@@ -3,16 +3,39 @@
 void DXRenderer::render(const FLOAT* RGBAcolor)
 {
 	prepareForRendering();
-	DXResource resource;
-	resource.CreateRenderTarget(device, &CPUDescriptorHandle);
-	graphicsCommandList->OMSetRenderTargets(0, &CPUDescriptorHandle, FALSE, nullptr);
+		
+	graphicsCommandList->OMSetRenderTargets(1, &CPUDescriptorHandle, FALSE, nullptr);
 	graphicsCommandList->ClearRenderTargetView(CPUDescriptorHandle, RGBAcolor, 0, NULL);
+	
+	flipBarrier(FALSE);
+
+	graphicsCommandList->ResourceBarrier(1, &barrier);
+	graphicsCommandList->CopyTextureRegion(&destination, 0, 0, 0, &source, nullptr);
+
+	flipBarrier(TRUE);
+
+	graphicsCommandList->ResourceBarrier(1, &barrier);
+	graphicsCommandList->Close();
+	
+	ID3D12CommandList* ppCommandLists[] = { graphicsCommandList };
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	commandQueue->Signal(frameFence, FRAME_FENCE_COMPLETION_VALUE);
+
+	waitForGPURenderFrame();
+
+	writeImageToFile();
+	std::cout << "Successful rendering\n";
 }
 
 void DXRenderer::prepareForRendering()
 {
 	createDevice();
 	createCommandsManager();
+	RTResource.CreateRenderTarget(device, &CPUDescriptorHandle);
+	placedFootprint = ReadbackResource.CreateGPUReadBackHeap(device, &RTResource);
+	createBarrier();
+	createSourceDest();
+	createFence();
 }
 
 void DXRenderer::createDevice()
@@ -54,3 +77,93 @@ void DXRenderer::createCommandsManager()
 	hr = device->CreateCommandList(0, commandsType, commandAllocator, nullptr, IID_PPV_ARGS(&graphicsCommandList));
 	assert(SUCCEEDED(hr));
 }
+
+void DXRenderer::createFence()
+{
+	HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameFence));
+	assert(SUCCEEDED(hr));
+
+	frameEventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	assert(frameEventHandle);
+}
+
+void DXRenderer::createBarrier()
+{
+	barrier.Transition.pResource = RTResource.GetD3D12Resource();
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+}
+void DXRenderer::flipBarrier(const bool& direction) {
+	if (direction) {
+		barrier.Transition.StateBefore =  D3D12_RESOURCE_STATE_COPY_SOURCE;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	}
+	else {
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+	}
+}
+
+void DXRenderer::createSourceDest()
+{
+	source.pResource = RTResource.GetD3D12Resource();
+	source.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+	source.SubresourceIndex = 0;
+
+	destination.pResource = ReadbackResource.GetD3D12Resource();
+	destination.PlacedFootprint = placedFootprint;
+	destination.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+}
+
+void DXRenderer::waitForGPURenderFrame(){
+	if (frameFence->GetCompletedValue() != FRAME_FENCE_COMPLETION_VALUE) {
+		HRESULT hr = frameFence->SetEventOnCompletion(FRAME_FENCE_COMPLETION_VALUE, frameEventHandle);
+		assert(SUCCEEDED(hr));
+
+		WaitForSingleObject(frameEventHandle, INFINITE);
+	}
+}
+
+void DXRenderer::writeImageToFile()
+{
+	void* renderTargetData;
+	HRESULT hr = ReadbackResource.GetD3D12Resource()->Map(0, nullptr, &renderTargetData);
+	assert(SUCCEEDED(hr));
+
+	std::string filename{"output.ppm"};
+	std::ofstream file(filename, std::ios::out | std::ios::binary);
+	assert(file);
+
+	D3D12_RESOURCE_DESC textureDesc = RTResource.GetResourceDescription();
+	file << "P3\n" << textureDesc.Width << " " << textureDesc.Height << "\n255\n";
+
+	for (UINT rowIdx = 0; rowIdx < textureDesc.Height; ++rowIdx) {
+		UINT rowPitch = placedFootprint.Footprint.RowPitch;
+		uint8_t* rowData = reinterpret_cast<uint8_t*>(renderTargetData) + rowIdx * rowPitch;
+
+		for (UINT64 colIdx = 0; colIdx < textureDesc.Width; ++colIdx) {
+
+			uint8_t* pixelData = rowData + colIdx * RGBA_COLOR_CHANNELS_COUNT;
+			for (int channelIdx = 0; channelIdx < RGBA_COLOR_CHANNELS_COUNT - 1; ++channelIdx) {
+				file << static_cast<int>(pixelData[channelIdx]) << " ";
+			}
+		}
+		file << "\n";
+	}
+
+	file.close();
+	ReadbackResource.GetD3D12Resource()->Unmap(0, nullptr);
+}
+
+void DXRenderer::cleanUp()
+{
+	if (adapter) adapter->Release();
+	if (dxgiFactory) dxgiFactory->Release();
+	if (device) device->Release();
+	if (graphicsCommandList) graphicsCommandList->Release();
+	if (commandAllocator) commandAllocator->Release();
+	if (commandQueue) commandQueue->Release();
+	if (frameFence) frameFence->Release();
+	if (frameEventHandle) CloseHandle(frameEventHandle);
+}
+

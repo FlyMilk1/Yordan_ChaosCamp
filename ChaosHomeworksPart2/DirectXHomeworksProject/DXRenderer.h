@@ -9,9 +9,13 @@
 
 #include <assert.h>
 #include <iostream>
+#include <fstream>
+static UINT64 FRAME_FENCE_COMPLETION_VALUE = 1;
+static UINT RGBA_COLOR_CHANNELS_COUNT = 4;
 class DXRenderer {
 public: //Public Functions
 	void render(const FLOAT* RGBAcolor);
+	void cleanUp();
 private: //Private Functions
 	/// <summary>
 	/// Create the necessary DirectX infrastructure and rendering resources
@@ -28,6 +32,26 @@ private: //Private Functions
 	/// </summary>
 	void createCommandsManager();
 
+	void createFence();
+
+	void createBarrier();
+
+	/// <summary>
+	/// Changes barrier's direction
+	/// </summary>
+	/// <param name="direction">FALSE- RT -> Copy Source; TRUE- CopySource->RT</param>
+	void flipBarrier(const bool& direction);
+
+	void createSourceDest();
+	/// <summary>
+	/// Waits for GPU to complete rendering frame
+	/// </summary>
+	void waitForGPURenderFrame();
+
+	void writeImageToFile();
+
+	
+
 private:
 	IDXGIFactory4* dxgiFactory = nullptr;
 	IDXGIAdapter1* adapter = nullptr;
@@ -38,5 +62,16 @@ private:
 	ID3D12GraphicsCommandList1* graphicsCommandList = nullptr;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandle = {};
+	
+	ID3D12Fence* frameFence = nullptr;
+	HANDLE frameEventHandle = nullptr;
+
+	DXResource RTResource;
+	DXResource ReadbackResource;
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedFootprint;
+
+	D3D12_RESOURCE_BARRIER barrier;
+	D3D12_TEXTURE_COPY_LOCATION source;
+	D3D12_TEXTURE_COPY_LOCATION destination;
 	
 };
