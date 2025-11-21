@@ -17,7 +17,7 @@ void DXRenderer::render(const FLOAT* RGBAcolor)
 	std::cout << "Preparion time: " << preparationStopwatch.getDurationMilli().count() << " ms" << std::endl;
 	std::cout << "Rendering time: " << renderingStopwatch.getDurationMilli().count() << " ms" << std::endl;
 
-	cleanUp();
+	//cleanUp();
 }
 
 void DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
