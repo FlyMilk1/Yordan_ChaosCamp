@@ -2,11 +2,29 @@
 
 void DXRenderer::render(const FLOAT* RGBAcolor)
 {
+	CustomStopwatch preparationStopwatch;
+	CustomStopwatch renderingStopwatch;
+
+	preparationStopwatch.start();
 	prepareForRendering();
-		
+	preparationStopwatch.stop();
+
+	renderingStopwatch.start();
+	renderFrame(RGBAcolor, TRUE);
+	renderingStopwatch.stop();
+
+	std::cout << "Successful rendering" << std::endl;
+	std::cout << "Preparion time: " << preparationStopwatch.getDurationMilli().count() << " ms" << std::endl;
+	std::cout << "Rendering time: " << renderingStopwatch.getDurationMilli().count() << " ms" << std::endl;
+
+	cleanUp();
+}
+
+void DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
+{
 	graphicsCommandList->OMSetRenderTargets(1, &CPUDescriptorHandle, FALSE, nullptr);
 	graphicsCommandList->ClearRenderTargetView(CPUDescriptorHandle, RGBAcolor, 0, NULL);
-	
+
 	flipBarrier(FALSE);
 
 	graphicsCommandList->ResourceBarrier(1, &barrier);
@@ -16,23 +34,28 @@ void DXRenderer::render(const FLOAT* RGBAcolor)
 
 	graphicsCommandList->ResourceBarrier(1, &barrier);
 	graphicsCommandList->Close();
-	
+
 	ID3D12CommandList* ppCommandLists[] = { graphicsCommandList };
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	commandQueue->Signal(frameFence, FRAME_FENCE_COMPLETION_VALUE);
 
 	waitForGPURenderFrame();
+	
+	if(writeToFile)	writeImageToFile();
 
-	writeImageToFile();
-	std::cout << "Successful rendering\n";
+	HRESULT hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+
+	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
+	assert(SUCCEEDED(hr));
 }
 
 void DXRenderer::prepareForRendering()
 {
 	createDevice();
 	createCommandsManager();
-	RTResource.CreateRenderTarget(device, &CPUDescriptorHandle);
-	placedFootprint = ReadbackResource.CreateGPUReadBackHeap(device, &RTResource);
+	RTResource.createRenderTarget(device, &CPUDescriptorHandle);
+	placedFootprint = ReadbackResource.createGPUReadBackHeap(device, &RTResource);
 	createBarrier();
 	createSourceDest();
 	createFence();
@@ -89,7 +112,7 @@ void DXRenderer::createFence()
 
 void DXRenderer::createBarrier()
 {
-	barrier.Transition.pResource = RTResource.GetD3D12Resource();
+	barrier.Transition.pResource = RTResource.getD3D12Resource();
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
 }
@@ -106,11 +129,11 @@ void DXRenderer::flipBarrier(const bool& direction) {
 
 void DXRenderer::createSourceDest()
 {
-	source.pResource = RTResource.GetD3D12Resource();
+	source.pResource = RTResource.getD3D12Resource();
 	source.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	source.SubresourceIndex = 0;
 
-	destination.pResource = ReadbackResource.GetD3D12Resource();
+	destination.pResource = ReadbackResource.getD3D12Resource();
 	destination.PlacedFootprint = placedFootprint;
 	destination.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 }
@@ -127,14 +150,14 @@ void DXRenderer::waitForGPURenderFrame(){
 void DXRenderer::writeImageToFile()
 {
 	void* renderTargetData;
-	HRESULT hr = ReadbackResource.GetD3D12Resource()->Map(0, nullptr, &renderTargetData);
+	HRESULT hr = ReadbackResource.getD3D12Resource()->Map(0, nullptr, &renderTargetData);
 	assert(SUCCEEDED(hr));
 
 	std::string filename{"output.ppm"};
 	std::ofstream file(filename, std::ios::out | std::ios::binary);
 	assert(file);
 
-	D3D12_RESOURCE_DESC textureDesc = RTResource.GetResourceDescription();
+	D3D12_RESOURCE_DESC textureDesc = RTResource.getResourceDescription();
 	file << "P3\n" << textureDesc.Width << " " << textureDesc.Height << "\n255\n";
 
 	for (UINT rowIdx = 0; rowIdx < textureDesc.Height; ++rowIdx) {
@@ -152,7 +175,7 @@ void DXRenderer::writeImageToFile()
 	}
 
 	file.close();
-	ReadbackResource.GetD3D12Resource()->Unmap(0, nullptr);
+	ReadbackResource.getD3D12Resource()->Unmap(0, nullptr);
 }
 
 void DXRenderer::cleanUp()

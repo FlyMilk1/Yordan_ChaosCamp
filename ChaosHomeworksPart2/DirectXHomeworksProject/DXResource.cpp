@@ -1,6 +1,6 @@
 #include "DXResource.h"
 
-void DXResource::CreateRenderTarget(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE* CPUDescriptorHandle)
+void DXResource::createRenderTarget(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE* CPUDescriptorHandle)
 {
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	resourceDesc.Width = 1920;
@@ -25,10 +25,10 @@ void DXResource::CreateRenderTarget(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_H
 	
 }
 
-D3D12_PLACED_SUBRESOURCE_FOOTPRINT DXResource::CreateGPUReadBackHeap(ID3D12Device* device, const DXResource* RenderTargetResource)
+D3D12_PLACED_SUBRESOURCE_FOOTPRINT DXResource::createGPUReadBackHeap(ID3D12Device* device, const DXResource* RenderTargetResource)
 {
 	UINT64 readbackBufferSize = 0;
-	D3D12_RESOURCE_DESC RTResource = RenderTargetResource->GetResourceDescription();
+	D3D12_RESOURCE_DESC RTResource = RenderTargetResource->getResourceDescription();
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedFootprint = {};
 	device->GetCopyableFootprints(&RTResource, 0, 1, 0, &placedFootprint, nullptr, nullptr, &readbackBufferSize);
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -46,12 +46,12 @@ D3D12_PLACED_SUBRESOURCE_FOOTPRINT DXResource::CreateGPUReadBackHeap(ID3D12Devic
 	return placedFootprint;
 }
 
-D3D12_RESOURCE_DESC DXResource::GetResourceDescription() const
+D3D12_RESOURCE_DESC DXResource::getResourceDescription() const
 {
 	return resourceDesc;
 }
 
-ID3D12Resource* DXResource::GetD3D12Resource() const
+ID3D12Resource* DXResource::getD3D12Resource() const
 {
 	return d3d12Resource;
 }

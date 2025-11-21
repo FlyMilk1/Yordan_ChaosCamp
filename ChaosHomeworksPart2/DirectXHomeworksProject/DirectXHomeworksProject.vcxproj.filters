@@ -24,6 +24,9 @@
     <ClCompile Include="DXResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CustomStopwatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXRenderer.h">
@@ -31,6 +34,9 @@
     </ClInclude>
     <ClInclude Include="DXResource.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomStopwatch.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
