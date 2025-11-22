@@ -1,15 +1,26 @@
-#include "DXRenderer.h"
 #include <string>
+#include "Engine.h"
 
-int main() {
+int main(int argc, char *argv[]) {
+	QApplication app(argc, argv);
+	MainWindow window;
+	window.show();
+
 	DXRenderer renderer;
-	FLOAT color[] = {1.0f,0.5f,0.0f,1.0f};
-	//renderer.prepareForRendering();
-	renderer.render(color);
-	/*for (int i = 0; i < 1'000; ++i) {
-		renderer.renderFrame(color, FALSE);
-	}*/
-	//renderer.cleanUp();
-	std::cout << "Success!";
-	return 0;
+
+	const QLabel* renderFrame = window.getRenderFrame();
+	
+	renderer.prepareForRendering(renderFrame);
+
+	Engine engine(&window, renderer);
+
+	engine.start();
+	QTimer* timer = new QTimer(&app);
+	QObject::connect(timer, &QTimer::timeout, [&engine]() {
+		engine.update();
+	});
+
+	timer->start(0);
+
+	return app.exec();
 }

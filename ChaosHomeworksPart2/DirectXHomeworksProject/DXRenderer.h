@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include "CustomStopwatch.h"
+#include <QLabel>
 
 MAKE_SMART_COM_POINTER(IDXGIFactory4);
 MAKE_SMART_COM_POINTER(IDXGIAdapter1);
@@ -34,11 +35,11 @@ public: //Public Functions
 	/// Renders frame but REQUIRES PREPARATION with prepareForRendering() before use
 	/// </summary>
 	/// <param name="RGBAcolor"></param>
-	void renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile);
+	QImage renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile);
 	/// <summary>
 	/// Create the necessary DirectX infrastructure and rendering resources
 	/// </summary>
-	void prepareForRendering();
+	void prepareForRendering(const QLabel* frame);
 
 	/// <summary>
 	/// Cleans up memory from rendering variables and pointers
@@ -86,7 +87,7 @@ private: //Private Functions
 	/// </summary>
 	void writeImageToFile();
 
-	
+	static QImage renderTargetDataToQimage(void* renderTargetData, const UINT64& width, const UINT64& height, const UINT& rowPitch);
 
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr;

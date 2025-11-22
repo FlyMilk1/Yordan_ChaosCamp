@@ -1,10 +1,10 @@
 #include "DXResource.h"
 
-void DXResource::createRenderTarget(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE* CPUDescriptorHandle)
+void DXResource::createRenderTarget(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE* CPUDescriptorHandle, const UINT64& frameWidth, const UINT64& frameHeight)
 {
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	resourceDesc.Width = 1920;
-	resourceDesc.Height = 1080;
+	resourceDesc.Width = frameWidth;
+	resourceDesc.Height = frameHeight;
 	resourceDesc.DepthOrArraySize = 1;
 	resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	resourceDesc.SampleDesc.Count = 1;

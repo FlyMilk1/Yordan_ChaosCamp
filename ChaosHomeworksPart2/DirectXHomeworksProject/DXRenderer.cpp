@@ -2,26 +2,32 @@
 
 void DXRenderer::render(const FLOAT* RGBAcolor)
 {
-	CustomStopwatch preparationStopwatch;
-	CustomStopwatch renderingStopwatch;
+	//CustomStopwatch preparationStopwatch;
+	//CustomStopwatch renderingStopwatch;
 
-	preparationStopwatch.start();
-	prepareForRendering();
-	preparationStopwatch.stop();
+	//preparationStopwatch.start();
+	//prepareForRendering();
+	//preparationStopwatch.stop();
 
-	renderingStopwatch.start();
-	renderFrame(RGBAcolor, TRUE);
-	renderingStopwatch.stop();
+	//renderingStopwatch.start();
+	//renderFrame(RGBAcolor, TRUE);
+	//renderingStopwatch.stop();
 
-	std::cout << "Successful rendering" << std::endl;
-	std::cout << "Preparion time: " << preparationStopwatch.getDurationMilli().count() << " ms" << std::endl;
-	std::cout << "Rendering time: " << renderingStopwatch.getDurationMilli().count() << " ms" << std::endl;
+	//std::cout << "Successful rendering" << std::endl;
+	//std::cout << "Preparion time: " << preparationStopwatch.getDurationMilli().count() << " ms" << std::endl;
+	//std::cout << "Rendering time: " << renderingStopwatch.getDurationMilli().count() << " ms" << std::endl;
 
-	//cleanUp();
+	////cleanUp();
 }
 
-void DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
+QImage DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
 {
+	HRESULT hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+
+	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
+	assert(SUCCEEDED(hr));
+
 	graphicsCommandList->OMSetRenderTargets(1, &CPUDescriptorHandle, FALSE, nullptr);
 	graphicsCommandList->ClearRenderTargetView(CPUDescriptorHandle, RGBAcolor, 0, NULL);
 
@@ -42,19 +48,24 @@ void DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
 	waitForGPURenderFrame();
 	
 	if(writeToFile)	writeImageToFile();
+	else {
+		void* renderTargetData;
+		hr = ReadbackResource.getD3D12Resource()->Map(0, nullptr, &renderTargetData);
+		assert(SUCCEEDED(hr));
 
-	HRESULT hr = commandAllocator->Reset();
-	assert(SUCCEEDED(hr));
+		D3D12_RESOURCE_DESC textureDesc = RTResource.getResourceDescription();
 
-	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
-	assert(SUCCEEDED(hr));
+		return DXRenderer::renderTargetDataToQimage(renderTargetData, textureDesc.Width, textureDesc.Height, placedFootprint.Footprint.RowPitch);
+	}
+
+	return {};
 }
 
-void DXRenderer::prepareForRendering()
+void DXRenderer::prepareForRendering(const QLabel* frame)
 {
 	createDevice();
 	createCommandsManager();
-	RTResource.createRenderTarget(device, &CPUDescriptorHandle);
+	RTResource.createRenderTarget(device, &CPUDescriptorHandle, frame->size().width(), frame->size().height());
 	placedFootprint = ReadbackResource.createGPUReadBackHeap(device, &RTResource);
 	createBarrier();
 	createSourceDest();
@@ -177,6 +188,19 @@ void DXRenderer::writeImageToFile()
 	file.close();
 	ReadbackResource.getD3D12Resource()->Unmap(0, nullptr);
 }
+
+QImage DXRenderer::renderTargetDataToQimage(void* renderTargetData, const UINT64& width, const UINT64& height, const UINT& rowPitch){
+    QImage image(width, height, QImage::Format_RGBA8888);
+
+    for (UINT row = 0; row < height; ++row) {
+        const uint8_t* src = reinterpret_cast<uint8_t*>(renderTargetData) + row * rowPitch;
+        uint8_t* dst = image.scanLine(row);
+        memcpy(dst, src, width * 4);
+    }
+
+    return image;
+}
+
 
 void DXRenderer::cleanUp()
 {
