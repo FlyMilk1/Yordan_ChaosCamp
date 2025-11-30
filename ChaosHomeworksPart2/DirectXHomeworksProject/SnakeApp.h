@@ -1,3 +1,4 @@
+//Made by Yordan Yonchev for Chaos Raytracing Course 2025
 #pragma once
 #include <QtWidgets/QApplication>
 #include <QTimer>
@@ -5,7 +6,7 @@
 #include "CustomStopwatch.h"
 #include "DXRenderer.h"
 #include "FPSPresets.h"
-static const FLOAT orange[] = {1.0f,0.5f,0.0f,1.0f};
+
 class SnakeApp : public QObject
 {
 	Q_OBJECT
@@ -13,7 +14,7 @@ public://Public functions
 	SnakeApp();
 
 	/// <summary>
-	/// Executes the first frame
+	/// Initializes the application and prepares for rendering
 	/// </summary>
 	bool init();
 private://Private functions
@@ -24,13 +25,21 @@ private://Private functions
 	/// <param name="out">Color array</param>
 	void getFrameColor(int i, float out[3]);
 
+	/// <summary>
+	/// Initializes the application window
+	/// </summary>
+	/// <returns></returns>
 	bool initWindow();
 
 private slots:
+
+	/// <summary>
+	/// Updates the rendering stats
+	/// </summary>
 	void updateRenderStats();
 
 	/// <summary>
-	/// Executes every frame
+	/// Executes on every frame
 	/// </summary>
 	void onIdleTick();
 
@@ -41,7 +50,7 @@ private://Variables
 	CustomStopwatch secondsPassedFromLastFrame = {}; //Stopwatch that keeps the time from previous frame
 	DXRenderer renderer = {}; //The DirectX Renderer
 	QApplication* app = nullptr; //Pointer to the Qt Application
-	QTimer* idleTimer = nullptr;
-	QTimer* fpsTimer = nullptr;
+	QTimer* idleTimer = nullptr; //Pointer to the idle timer
+	QTimer* fpsTimer = nullptr; //Pointer to the FPS timer
 };
 

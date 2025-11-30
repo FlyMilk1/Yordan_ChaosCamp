@@ -25,6 +25,7 @@ MAKE_SMART_COM_POINTER(ID3D12Fence);
 MAKE_SMART_COM_POINTER(ID3D12Debug);
 MAKE_SMART_COM_POINTER(IDXGISwapChain1);
 MAKE_SMART_COM_POINTER(IDXGISwapChain3);
+MAKE_SMART_COM_POINTER(ID3D12DescriptorHeap);
 
 
 static UINT RGBA_COLOR_CHANNELS_COUNT = 4;
@@ -97,42 +98,53 @@ private: //Private Functions
 	/// <returns></returns>
 	static QImage renderTargetDataToQimage(void* renderTargetData, const UINT64& width, const UINT64& height, const UINT& rowPitch);
 
+	/// <summary>
+	/// Creates needed swap chain components for rendering
+	/// </summary>
+	/// <param name="frame"></param>
 	void createSwapChain(const QLabel* frame);
 
+	/// <summary>
+	/// Executed in the beggining of renderFrame(). Resets the command allocator and lists
+	/// </summary>
 	void frameBegin();
 
+	/// <summary>
+	/// Creates the render target views
+	/// </summary>
+	/// <param name="frame"></param>
 	void createRTVs(const QLabel* frame);
 
 private:
-	IDXGIFactory4Ptr dxgiFactory = nullptr;
-	IDXGIAdapter1Ptr adapter = nullptr;
-	ID3D12DevicePtr device = nullptr;
+	IDXGIFactory4Ptr dxgiFactory = nullptr; //Pointer to the DXGI Factory
+	IDXGIAdapter1Ptr adapter = nullptr; //Pointer to the used for rendering adapter
+	ID3D12DevicePtr device = nullptr; //Pointer to the used for rendering device
 
-	ID3D12CommandQueuePtr commandQueue = nullptr;
-	ID3D12CommandAllocatorPtr commandAllocator = nullptr;
-	ID3D12GraphicsCommandListPtr graphicsCommandList = nullptr;
+	ID3D12CommandQueuePtr commandQueue = nullptr; //Pointer to the command queue
+	ID3D12CommandAllocatorPtr commandAllocator = nullptr; //Pointer to the command allocator
+	ID3D12GraphicsCommandListPtr graphicsCommandList = nullptr; //Pointer to the command list
 
-	ID3D12FencePtr frameFence = nullptr;
-	HANDLE frameEventHandle = nullptr;
+	ID3D12FencePtr frameFence = nullptr; //Pointer to the frame fence used to sync CPU and GPU
+	HANDLE frameEventHandle = nullptr; //Handle for the frame fence event
 
-	D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandle = {};
+	D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandle = {}; //Handle for the CPU descriptor
 
-	RTVResource RTResource;
-	GPUReadbackHeapResource ReadbackResource;
-	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedFootprint = {};
+	RTVResource RTResource; //Render target resource
+	GPUReadbackHeapResource ReadbackResource; //GPU readback heap resource
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedFootprint = {}; //D3D12 placed footprint
 
-	D3D12_RESOURCE_BARRIER barrier = {};
-	D3D12_TEXTURE_COPY_LOCATION source = {};
-	D3D12_TEXTURE_COPY_LOCATION destination = {};
+	D3D12_RESOURCE_BARRIER barrier = {}; //Resource barrier
+	D3D12_TEXTURE_COPY_LOCATION source = {}; //Copy location source
+	D3D12_TEXTURE_COPY_LOCATION destination = {}; //Copy location destination
 
-	UINT64 renderFrameFenceValue = 0;
+	UINT64 renderFrameFenceValue = 0; //Current render frame fence value
 
 	
-	IDXGISwapChain3Ptr swapChain3;
-	HWND rtvHandle = nullptr;
-	UINT currentSwapChainBackBufferIndex = 1;
-	ID3D12ResourcePtr backBuffer = nullptr;
-	UINT rtvDescriptorSize = 0;
-	ID3D12DescriptorHeap* rtvHeap = nullptr;
+	IDXGISwapChain3Ptr swapChain3; //Pointer to the swap chain (3)
+	HWND rtvHandle = nullptr; //Handle to the render target view
+	UINT currentSwapChainBackBufferIndex = 1; //Current swap chain back buffer index
+	ID3D12ResourcePtr backBuffer = nullptr; //Pointer to the back buffer
+	UINT rtvDescriptorSize = 0; //Render target view descriptor size
+	ID3D12DescriptorHeapPtr rtvHeap = nullptr; //Pointer to the render target view heap
 	
 };
