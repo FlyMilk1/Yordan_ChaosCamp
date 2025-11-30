@@ -12,7 +12,7 @@ public:
 	Ui::MainWindow ui;
 public://Public functions
 	const QLabel* getRenderFrame()const;
-	void fillFrame(const QImage& frameImage);
+	void updateViewport(const QImage& frameImage);
 	void setFPSCounter(const unsigned int& fps);
 private://Variables
 

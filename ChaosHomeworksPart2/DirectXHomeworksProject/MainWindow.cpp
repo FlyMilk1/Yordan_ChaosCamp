@@ -4,6 +4,9 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	//setAttribute(Qt::WA_PaintOnScreen);
+	//setAttribute(Qt::WA_NoSystemBackground);
+
 }
 
 MainWindow::~MainWindow()
@@ -14,7 +17,7 @@ const QLabel* MainWindow::getRenderFrame() const
 	return ui.frameLabel;
 }
 
-void MainWindow::fillFrame(const QImage& frameImage)
+void MainWindow::updateViewport(const QImage& frameImage)
 {
 	ui.frameLabel->setPixmap(QPixmap::fromImage(frameImage));
 }

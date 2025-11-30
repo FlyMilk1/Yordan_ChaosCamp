@@ -1,5 +1,23 @@
 #include "DXRenderer.h"
 
+DXRenderer::DXRenderer()
+{
+#ifdef _DEBUG
+	ID3D12DebugPtr debugController = nullptr;
+	HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&debugController));
+
+	if (SUCCEEDED(hr)) {
+		debugController->EnableDebugLayer();
+		OutputDebugStringA("[D3D12 DEBUG] Debug Layer ENABLED\n");
+		debugController->Release();
+	}
+	else {
+		OutputDebugStringA("[D3D12 DEBUG] Debug Layer NOT AVAILABLE\n");
+	}
+#endif
+
+}
+
 void DXRenderer::render(const FLOAT* RGBAcolor)
 {
 	//CustomStopwatch preparationStopwatch;
@@ -22,41 +40,41 @@ void DXRenderer::render(const FLOAT* RGBAcolor)
 
 QImage DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
 {
-	HRESULT hr = commandAllocator->Reset();
-	assert(SUCCEEDED(hr));
+	frameBegin();
 
-	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
-	assert(SUCCEEDED(hr));
+	currentSwapChainBackBufferIndex = swapChain3->GetCurrentBackBufferIndex();
+	setBarrier(D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	graphicsCommandList->OMSetRenderTargets(1, &CPUDescriptorHandle, FALSE, nullptr);
-	graphicsCommandList->ClearRenderTargetView(CPUDescriptorHandle, RGBAcolor, 0, NULL);
+	D3D12_CPU_DESCRIPTOR_HANDLE currentRTV = CPUDescriptorHandle;
+	currentRTV.ptr += currentSwapChainBackBufferIndex * rtvDescriptorSize;
+	graphicsCommandList->OMSetRenderTargets(1, &currentRTV, FALSE, nullptr);
+	graphicsCommandList->ClearRenderTargetView(currentRTV, RGBAcolor, 0, NULL);
 
-	flipBarrier(FALSE);
+	//setSourceDest(currentSwapChainBackBufferIndex);
+	//graphicsCommandList->CopyTextureRegion(&destination, 0, 0, 0, &source, nullptr);
 
-	graphicsCommandList->ResourceBarrier(1, &barrier);
-	graphicsCommandList->CopyTextureRegion(&destination, 0, 0, 0, &source, nullptr);
+	setBarrier(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
-	flipBarrier(TRUE);
-
-	graphicsCommandList->ResourceBarrier(1, &barrier);
 	graphicsCommandList->Close();
 
 	ID3D12CommandList* ppCommandLists[] = { graphicsCommandList };
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	commandQueue->Signal(frameFence, FRAME_FENCE_COMPLETION_VALUE);
+	++renderFrameFenceValue;
+	commandQueue->Signal(frameFence, renderFrameFenceValue);
 
 	waitForGPURenderFrame();
-	
-	if(writeToFile)	writeImageToFile();
-	else {
-		void* renderTargetData;
-		hr = ReadbackResource.getD3D12Resource()->Map(0, nullptr, &renderTargetData);
-		assert(SUCCEEDED(hr));
+	swapChain3->Present(1, 0);
+	//if(writeToFile)	writeImageToFile();
+	//else {
+	//	/*void* renderTargetData;
+	//	HRESULT hr = ReadbackResource.getD3D12Resource()->Map(0, nullptr, &renderTargetData);
+	//	assert(SUCCEEDED(hr));
 
-		D3D12_RESOURCE_DESC textureDesc = RTResource.getResourceDescription();
+	//	D3D12_RESOURCE_DESC textureDesc = RTResource.getResourceDescription();
 
-		return DXRenderer::renderTargetDataToQimage(renderTargetData, textureDesc.Width, textureDesc.Height, placedFootprint.Footprint.RowPitch);
-	}
+	//	return DXRenderer::renderTargetDataToQimage(renderTargetData, textureDesc.Width, textureDesc.Height, placedFootprint.Footprint.RowPitch);*/
+	//	
+	//}
 
 	return {};
 }
@@ -65,16 +83,17 @@ void DXRenderer::prepareForRendering(const QLabel* frame)
 {
 	createDevice();
 	createCommandsManager();
-	RTResource.createRenderTarget(device, &CPUDescriptorHandle, frame->size().width(), frame->size().height());
-	placedFootprint = ReadbackResource.createGPUReadBackHeap(device, &RTResource);
-	createBarrier();
-	createSourceDest();
+	createSwapChain(frame);
+	createRTVs(frame);
+	/*ReadbackResource = GPUReadbackHeapResource(device, &RTResource);
+	placedFootprint = ReadbackResource.getPlacedFootprint();*/
 	createFence();
 }
 
 void DXRenderer::createDevice()
 {
-	HRESULT hr = CreateDXGIFactory1(
+
+	HRESULT hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG,
 		IID_PPV_ARGS(&dxgiFactory)
 	);
 
@@ -85,7 +104,7 @@ void DXRenderer::createDevice()
 		hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&device));
 		//Uses first GPU
 		if (SUCCEEDED(hr)) {
-			std::wcout << "Using GPU: " << desc.Description << "\n";
+			//std::wcout << "Using GPU: " << desc.Description << "\n";
 			break;
 		}
 
@@ -110,6 +129,10 @@ void DXRenderer::createCommandsManager()
 
 	hr = device->CreateCommandList(0, commandsType, commandAllocator, nullptr, IID_PPV_ARGS(&graphicsCommandList));
 	assert(SUCCEEDED(hr));
+
+	hr = graphicsCommandList->Close();
+	assert(SUCCEEDED(hr));
+
 }
 
 void DXRenderer::createFence()
@@ -121,26 +144,21 @@ void DXRenderer::createFence()
 	assert(frameEventHandle);
 }
 
-void DXRenderer::createBarrier()
+void DXRenderer::setBarrier(const D3D12_RESOURCE_STATES& beforeState, const D3D12_RESOURCE_STATES& afterState)
 {
-	barrier.Transition.pResource = RTResource.getD3D12Resource();
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-}
-void DXRenderer::flipBarrier(const bool& direction) {
-	if (direction) {
-		barrier.Transition.StateBefore =  D3D12_RESOURCE_STATE_COPY_SOURCE;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	}
-	else {
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-	}
+	HRESULT hr = swapChain3->GetBuffer(currentSwapChainBackBufferIndex, IID_PPV_ARGS(&backBuffer));
+	assert(SUCCEEDED(hr));
+
+	barrier.Transition.pResource = backBuffer;
+	barrier.Transition.StateBefore = beforeState;
+	barrier.Transition.StateAfter = afterState;
+
+	graphicsCommandList->ResourceBarrier(1, &barrier);
 }
 
-void DXRenderer::createSourceDest()
+void DXRenderer::setSourceDest(const UINT& resourceIndex)
 {
-	source.pResource = RTResource.getD3D12Resource();
+	source.pResource = RTResource.getRTVResource(resourceIndex);
 	source.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	source.SubresourceIndex = 0;
 
@@ -150,8 +168,8 @@ void DXRenderer::createSourceDest()
 }
 
 void DXRenderer::waitForGPURenderFrame(){
-	if (frameFence->GetCompletedValue() != FRAME_FENCE_COMPLETION_VALUE) {
-		HRESULT hr = frameFence->SetEventOnCompletion(FRAME_FENCE_COMPLETION_VALUE, frameEventHandle);
+	if (frameFence->GetCompletedValue() < renderFrameFenceValue) {
+		HRESULT hr = frameFence->SetEventOnCompletion(renderFrameFenceValue, frameEventHandle);
 		assert(SUCCEEDED(hr));
 
 		WaitForSingleObject(frameEventHandle, INFINITE);
@@ -178,7 +196,7 @@ void DXRenderer::writeImageToFile()
 		for (UINT64 colIdx = 0; colIdx < textureDesc.Width; ++colIdx) {
 
 			uint8_t* pixelData = rowData + colIdx * RGBA_COLOR_CHANNELS_COUNT;
-			for (int channelIdx = 0; channelIdx < RGBA_COLOR_CHANNELS_COUNT - 1; ++channelIdx) {
+			for (UINT channelIdx = 0; channelIdx < RGBA_COLOR_CHANNELS_COUNT - 1; ++channelIdx) {
 				file << static_cast<int>(pixelData[channelIdx]) << " ";
 			}
 		}
@@ -199,6 +217,73 @@ QImage DXRenderer::renderTargetDataToQimage(void* renderTargetData, const UINT64
     }
 
     return image;
+}
+
+void DXRenderer::createSwapChain(const QLabel* frame)
+{
+	IDXGISwapChain1Ptr swapChain1;
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+	swapChainDesc.Width = frame->width();
+	swapChainDesc.Height = frame->height();
+	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.Stereo = FALSE;
+	swapChainDesc.SampleDesc = { 1, 0 };
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount = 2;
+	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+	swapChainDesc.Flags = 0;
+
+
+	rtvHandle = HWND(frame->winId());
+
+	HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(
+		commandQueue,
+		rtvHandle,
+		&swapChainDesc,
+		nullptr,
+		nullptr,
+		&swapChain1
+	);
+	assert(SUCCEEDED(hr));
+
+	hr = swapChain1->QueryInterface(IID_PPV_ARGS(&swapChain3));
+	assert(SUCCEEDED(hr));
+
+	
+}
+
+void DXRenderer::frameBegin()
+{
+	HRESULT hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+
+	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
+	assert(SUCCEEDED(hr));
+}
+
+void DXRenderer::createRTVs(const QLabel* frame)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+	rtvHeapDesc.NumDescriptors = 2; 
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	HRESULT hr = device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
+	assert(SUCCEEDED(hr));
+
+	CPUDescriptorHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+
+	rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = CPUDescriptorHandle;
+
+	for (UINT i = 0; i < 2; ++i) {
+		ID3D12Resource* backBuffer = nullptr;
+		swapChain3->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
+		device->CreateRenderTargetView(backBuffer, nullptr, handle);
+		handle.ptr += rtvDescriptorSize;
+	}
 }
 
 

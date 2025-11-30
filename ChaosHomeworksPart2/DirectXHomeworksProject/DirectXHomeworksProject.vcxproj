@@ -144,7 +144,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -152,15 +152,20 @@
     <ClCompile Include="CustomStopwatch.cpp" />
     <ClCompile Include="DXRenderer.cpp" />
     <ClCompile Include="DXResource.cpp" />
-    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="SnakeApp.cpp" />
+    <ClCompile Include="GPUReadbackHeapResource.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="RTVResource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CustomStopwatch.h" />
     <ClInclude Include="DXRenderer.h" />
     <ClInclude Include="DXResource.h" />
-    <ClInclude Include="Engine.h" />
+    <ClInclude Include="GPUReadbackHeapResource.h" />
+    <ClInclude Include="RTVResource.h" />
+    <QtMoc Include="SnakeApp.h" />
+    <ClInclude Include="FPSPresets.h" />
     <QtMoc Include="MainWindow.h" />
   </ItemGroup>
   <ItemGroup>

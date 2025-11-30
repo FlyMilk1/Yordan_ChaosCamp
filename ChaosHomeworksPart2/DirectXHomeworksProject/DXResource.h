@@ -11,12 +11,12 @@ MAKE_SMART_COM_POINTER(ID3D12DescriptorHeap);
 
 class DXResource {
 public: //Public Functions
-	void createRenderTarget(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE* CPUDescriptorHandle, const UINT64& frameWidth, const UINT64& frameHeight);
+	
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT createGPUReadBackHeap(ID3D12Device* device, const DXResource* RenderTargetResource);
 	D3D12_RESOURCE_DESC getResourceDescription() const;
 	ID3D12Resource* getD3D12Resource() const;
 	void cleanUpResource();
-private: //Variables
+protected: //Variables
 	ID3D12ResourcePtr d3d12Resource = nullptr;
 	D3D12_RESOURCE_DESC resourceDesc = {};
 	D3D12_HEAP_PROPERTIES heapProperties = {};

@@ -12,6 +12,8 @@
 #include <fstream>
 #include "CustomStopwatch.h"
 #include <QLabel>
+#include "RTVResource.h"
+#include "GPUReadbackHeapResource.h"
 
 MAKE_SMART_COM_POINTER(IDXGIFactory4);
 MAKE_SMART_COM_POINTER(IDXGIAdapter1);
@@ -20,11 +22,15 @@ MAKE_SMART_COM_POINTER(ID3D12CommandQueue);
 MAKE_SMART_COM_POINTER(ID3D12CommandAllocator);
 MAKE_SMART_COM_POINTER(ID3D12GraphicsCommandList);
 MAKE_SMART_COM_POINTER(ID3D12Fence);
+MAKE_SMART_COM_POINTER(ID3D12Debug);
+MAKE_SMART_COM_POINTER(IDXGISwapChain1);
+MAKE_SMART_COM_POINTER(IDXGISwapChain3);
 
-static UINT64 FRAME_FENCE_COMPLETION_VALUE = 1;
+
 static UINT RGBA_COLOR_CHANNELS_COUNT = 4;
 class DXRenderer {
 public: //Public Functions
+	DXRenderer();
 	/// <summary>
 	/// Prepares and renders a frame
 	/// </summary>
@@ -62,20 +68,14 @@ private: //Private Functions
 	void createFence();
 
 	/// <summary>
-	/// Create D3D12_RESOURCE_BARRIER that defines CPU and GPU direction of data transfer
+	/// Set the D3D12_RESOURCE_BARRIER that defines CPU and GPU direction of data transfer
 	/// </summary>
-	void createBarrier();
-
-	/// <summary>
-	/// Changes barrier's direction
-	/// </summary>
-	/// <param name="direction">FALSE- RT -> Copy Source; TRUE- CopySource->RT</param>
-	void flipBarrier(const bool& direction);
+	void setBarrier(const D3D12_RESOURCE_STATES& beforeState, const D3D12_RESOURCE_STATES& afterState);
 
 	/// <summary>
 	/// Create Source and Destination D3D12 Texture Copy Locations
 	/// </summary>
-	void createSourceDest();
+	void setSourceDest(const UINT& resourceIndex);
 
 	/// <summary>
 	/// Waits for GPU to complete rendering frame
@@ -87,7 +87,21 @@ private: //Private Functions
 	/// </summary>
 	void writeImageToFile();
 
+	/// <summary>
+	/// Converts the renderTargetData into a QImage and returns it
+	/// </summary>
+	/// <param name="renderTargetData">renderTargetData</param>
+	/// <param name="width">Width of the frame</param>
+	/// <param name="height">Height of the frame</param>
+	/// <param name="rowPitch">Row pitch of render target data</param>
+	/// <returns></returns>
 	static QImage renderTargetDataToQimage(void* renderTargetData, const UINT64& width, const UINT64& height, const UINT& rowPitch);
+
+	void createSwapChain(const QLabel* frame);
+
+	void frameBegin();
+
+	void createRTVs(const QLabel* frame);
 
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr;
@@ -103,12 +117,22 @@ private:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandle = {};
 
-	DXResource RTResource;
-	DXResource ReadbackResource;
-	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedFootprint;
+	RTVResource RTResource;
+	GPUReadbackHeapResource ReadbackResource;
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedFootprint = {};
 
-	D3D12_RESOURCE_BARRIER barrier;
-	D3D12_TEXTURE_COPY_LOCATION source;
-	D3D12_TEXTURE_COPY_LOCATION destination;
+	D3D12_RESOURCE_BARRIER barrier = {};
+	D3D12_TEXTURE_COPY_LOCATION source = {};
+	D3D12_TEXTURE_COPY_LOCATION destination = {};
+
+	UINT64 renderFrameFenceValue = 0;
+
+	
+	IDXGISwapChain3Ptr swapChain3;
+	HWND rtvHandle = nullptr;
+	UINT currentSwapChainBackBufferIndex = 1;
+	ID3D12ResourcePtr backBuffer = nullptr;
+	UINT rtvDescriptorSize = 0;
+	ID3D12DescriptorHeap* rtvHeap = nullptr;
 	
 };
