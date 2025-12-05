@@ -14,6 +14,8 @@
 #include <QLabel>
 #include "RTVResource.h"
 #include "GPUReadbackHeapResource.h"
+#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColor.hlsl.h"
+#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColorVS.hlsl.h"
 
 MAKE_SMART_COM_POINTER(IDXGIFactory4);
 MAKE_SMART_COM_POINTER(IDXGIAdapter1);
@@ -26,6 +28,9 @@ MAKE_SMART_COM_POINTER(ID3D12Debug);
 MAKE_SMART_COM_POINTER(IDXGISwapChain1);
 MAKE_SMART_COM_POINTER(IDXGISwapChain3);
 MAKE_SMART_COM_POINTER(ID3D12DescriptorHeap);
+MAKE_SMART_COM_POINTER(ID3DBlob);
+MAKE_SMART_COM_POINTER(ID3D12RootSignature);
+MAKE_SMART_COM_POINTER(ID3D12PipelineState);
 
 
 static UINT RGBA_COLOR_CHANNELS_COUNT = 4;
@@ -113,8 +118,17 @@ private: //Private Functions
 	/// Creates the render target views
 	/// </summary>
 	/// <param name="frame"></param>
-	void createRTVs(const QLabel* frame);
+	void createRTVs();
+	
+	/// <summary>
+	/// Creates the root signature for shaders
+	/// </summary>
+	void createRootSignature();
 
+	/// <summary>
+	/// Creates the graphics pipeline state
+	/// </summary>
+	void createPipelineState();
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //Pointer to the used for rendering adapter
@@ -147,4 +161,7 @@ private:
 	UINT rtvDescriptorSize = 0; //Render target view descriptor size
 	ID3D12DescriptorHeapPtr rtvHeap = nullptr; //Pointer to the render target view heap
 	
+	ID3D12RootSignaturePtr rootSignature;
+	ID3D12PipelineStatePtr pipelineState;
+
 };

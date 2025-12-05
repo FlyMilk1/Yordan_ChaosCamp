@@ -13,62 +13,117 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="DXRenderer">
+      <UniqueIdentifier>{c617cb24-1b82-44e1-9552-8672fc4db7a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SnakeApp">
+      <UniqueIdentifier>{0f242862-c9e6-495f-9d23-07243e45ac39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Qt Files">
+      <UniqueIdentifier>{20627274-c086-4e0c-97fc-d91258d06a17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources">
+      <UniqueIdentifier>{017edf9d-af98-49d4-84f7-16b5db581112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\GPUReadback">
+      <UniqueIdentifier>{756d640c-d952-4e58-b2b3-9a602a75c1c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\RTVResource">
+      <UniqueIdentifier>{6c56c309-a9de-451b-abb7-a9a382688e80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\DXResource">
+      <UniqueIdentifier>{5000eb50-cb1c-40bf-a43c-cb02aebef24a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{61300b9f-5efd-4b5a-b884-2eb238f2d691}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\CustomStopwatch">
+      <UniqueIdentifier>{c831eb25-f70b-4bca-8db4-eb658c4cca60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\VertexBuffer">
+      <UniqueIdentifier>{df2b8a02-5d6a-4f6d-89d8-7e65723c9261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{e1a21206-aba1-4973-a62f-50aeeb645702}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\Overlays">
+      <UniqueIdentifier>{5895d7c3-1519-41d4-acc4-3600e3267b7f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DXRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DXResource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CustomStopwatch.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="SnakeApp.cpp">
+      <Filter>SnakeApp</Filter>
     </ClCompile>
     <ClCompile Include="MainWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SnakeApp.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Qt Files</Filter>
     </ClCompile>
     <ClCompile Include="RTVResource.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>DXResources\RTVResource</Filter>
     </ClCompile>
     <ClCompile Include="GPUReadbackHeapResource.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>DXResources\GPUReadback</Filter>
+    </ClCompile>
+    <ClCompile Include="DXRenderer.cpp">
+      <Filter>DXRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="DXResource.cpp">
+      <Filter>DXResources\DXResource</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomStopwatch.cpp">
+      <Filter>Utils\CustomStopwatch</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>DXResources\VertexBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DXRenderer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DXResource.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomStopwatch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FPSPresets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RTVResource.h">
-      <Filter>Header Files</Filter>
+      <Filter>DXResources\RTVResource</Filter>
     </ClInclude>
     <ClInclude Include="GPUReadbackHeapResource.h">
-      <Filter>Header Files</Filter>
+      <Filter>DXResources\GPUReadback</Filter>
+    </ClInclude>
+    <ClInclude Include="DXRenderer.h">
+      <Filter>DXRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="DXResource.h">
+      <Filter>DXResources\DXResource</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomStopwatch.h">
+      <Filter>Utils\CustomStopwatch</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSPresets.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>DXResources\VertexBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="MainWindow.ui" />
+    <QtMoc Include="SnakeApp.h">
+      <Filter>SnakeApp</Filter>
+    </QtMoc>
+    <QtMoc Include="MainWindow.h">
+      <Filter>Qt Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="MainWindow.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="SnakeApp.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
+    <QtUic Include="MainWindow.ui">
+      <Filter>Qt Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="ConstColorVS.hlsl">
+      <Filter>HLSL\Overlays</Filter>
+    </FxCompile>
+    <FxCompile Include="ConstColor.hlsl">
+      <Filter>HLSL\Overlays</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

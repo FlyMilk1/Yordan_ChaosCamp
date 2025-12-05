@@ -1,6 +1,8 @@
 #pragma once
 #include <d3d12.h>
 #pragma comment(lib, "d3d12.lib")
+#include "d3dx12_default.h"
+#include "d3dx12_core.h"
 #include <assert.h>
 #include <comdef.h>
 
@@ -11,22 +13,23 @@ MAKE_SMART_COM_POINTER(ID3D12DescriptorHeap);
 
 class DXResource {
 public: //Public Functions
+	virtual ~DXResource() = default;
 
 	/// <summary>
 	/// Returns the resource description
 	/// </summary>
-	D3D12_RESOURCE_DESC getResourceDescription() const;
+	virtual D3D12_RESOURCE_DESC getResourceDescription() const;
 
 	/// <summary>
 	/// Returns a pointer to the D3D12 resource
 	/// </summary>
 	/// <returns></returns>
-	ID3D12Resource* getD3D12Resource() const;
+	virtual ID3D12Resource* getD3D12Resource() const;
 
 	/// <summary>
 	/// Cleans the resource from memory
 	/// </summary>
-	void cleanUpResource();
+	virtual void cleanUpResource();
 protected: //Variables
 	ID3D12ResourcePtr d3d12Resource = nullptr; //Pointer to the D3D12 resource
 	D3D12_RESOURCE_DESC resourceDesc = {}; //D3D12 Resource description

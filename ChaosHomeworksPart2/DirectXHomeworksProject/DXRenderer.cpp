@@ -50,9 +50,6 @@ QImage DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
 	graphicsCommandList->OMSetRenderTargets(1, &currentRTV, FALSE, nullptr);
 	graphicsCommandList->ClearRenderTargetView(currentRTV, RGBAcolor, 0, NULL);
 
-	//setSourceDest(currentSwapChainBackBufferIndex);
-	//graphicsCommandList->CopyTextureRegion(&destination, 0, 0, 0, &source, nullptr);
-
 	setBarrier(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	graphicsCommandList->Close();
@@ -64,17 +61,6 @@ QImage DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
 
 	waitForGPURenderFrame();
 	swapChain3->Present(1, 0);
-	//if(writeToFile)	writeImageToFile();
-	//else {
-	//	/*void* renderTargetData;
-	//	HRESULT hr = ReadbackResource.getD3D12Resource()->Map(0, nullptr, &renderTargetData);
-	//	assert(SUCCEEDED(hr));
-
-	//	D3D12_RESOURCE_DESC textureDesc = RTResource.getResourceDescription();
-
-	//	return DXRenderer::renderTargetDataToQimage(renderTargetData, textureDesc.Width, textureDesc.Height, placedFootprint.Footprint.RowPitch);*/
-	//	
-	//}
 
 	return {};
 }
@@ -84,7 +70,7 @@ void DXRenderer::prepareForRendering(const QLabel* frame)
 	createDevice();
 	createCommandsManager();
 	createSwapChain(frame);
-	createRTVs(frame);
+	createRTVs();
 	/*ReadbackResource = GPUReadbackHeapResource(device, &RTResource);
 	placedFootprint = ReadbackResource.getPlacedFootprint();*/
 	createFence();
@@ -227,7 +213,7 @@ void DXRenderer::createSwapChain(const QLabel* frame)
 	swapChainDesc.Height = frame->height();
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.Stereo = FALSE;
-	swapChainDesc.SampleDesc = { 1, 0 };
+	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = 2;
 	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -263,7 +249,7 @@ void DXRenderer::frameBegin()
 	assert(SUCCEEDED(hr));
 }
 
-void DXRenderer::createRTVs(const QLabel* frame)
+void DXRenderer::createRTVs()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 	rtvHeapDesc.NumDescriptors = 2; 
@@ -284,6 +270,58 @@ void DXRenderer::createRTVs(const QLabel* frame)
 		device->CreateRenderTargetView(backBuffer, nullptr, handle);
 		handle.ptr += rtvDescriptorSize;
 	}
+}
+
+void DXRenderer::createRootSignature()
+{
+	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	ID3DBlobPtr signature;
+	ID3DBlobPtr error;
+
+	D3D12SerializeRootSignature(
+		&rootSignatureDesc,
+		D3D_ROOT_SIGNATURE_VERSION_1,
+		&signature,
+		&error
+	);
+
+	HRESULT hr = device->CreateRootSignature(
+		0,
+		signature->GetBufferPointer(),
+		signature->GetBufferSize(),
+		IID_PPV_ARGS(&rootSignature)
+	);
+	assert(SUCCEEDED(hr));
+}
+
+void DXRenderer::createPipelineState()
+{
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psDesc = {};
+
+	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+	};
+
+	psDesc.pRootSignature = rootSignature;
+	psDesc.PS = { g_const_color, _countof(g_const_color) };
+	psDesc.VS = { g_const_color_vs, _countof(g_const_color_vs) };
+	psDesc.InputLayout = { inputLayout, _countof(inputLayout) };
+	psDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psDesc.DepthStencilState.DepthEnable = FALSE;
+	psDesc.DepthStencilState.StencilEnable = FALSE;
+	psDesc.SampleMask = UINT_MAX;
+	psDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psDesc.NumRenderTargets = 1;
+	psDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psDesc.SampleDesc.Count = 1;
+	psDesc.SampleDesc.Quality = 0;
+
+	HRESULT hr = device->CreateGraphicsPipelineState(&psDesc, IID_PPV_ARGS(&pipelineState));
+	assert(SUCCEEDED(hr));
+
 }
 
 
