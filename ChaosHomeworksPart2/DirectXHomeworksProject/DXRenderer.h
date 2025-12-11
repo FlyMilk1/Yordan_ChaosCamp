@@ -8,14 +8,22 @@
 #include "DXResource.h"
 
 #include <assert.h>
-#include <iostream>
+
 #include <fstream>
 #include "CustomStopwatch.h"
 #include <QLabel>
 #include "RTVResource.h"
 #include "GPUReadbackHeapResource.h"
-#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColor.hlsl.h"
-#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColorVS.hlsl.h"
+#include "VertexBuffer.h"
+#include "Shape.h"
+#ifdef _DEBUG
+	#include <iostream>
+	#include "DirectXH.a0236926/x64/Debug/CompiledShaders/ConstColor.hlsl.h"
+	#include "DirectXH.a0236926/x64/Debug/CompiledShaders/ConstColorVS.hlsl.h"
+#else
+	#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColor.hlsl.h"
+	#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColorVS.hlsl.h"
+#endif
 
 MAKE_SMART_COM_POINTER(IDXGIFactory4);
 MAKE_SMART_COM_POINTER(IDXGIAdapter1);
@@ -31,8 +39,6 @@ MAKE_SMART_COM_POINTER(ID3D12DescriptorHeap);
 MAKE_SMART_COM_POINTER(ID3DBlob);
 MAKE_SMART_COM_POINTER(ID3D12RootSignature);
 MAKE_SMART_COM_POINTER(ID3D12PipelineState);
-
-
 static UINT RGBA_COLOR_CHANNELS_COUNT = 4;
 class DXRenderer {
 public: //Public Functions
@@ -110,9 +116,17 @@ private: //Private Functions
 	void createSwapChain(const QLabel* frame);
 
 	/// <summary>
-	/// Executed in the beggining of renderFrame(). Resets the command allocator and lists
+	/// Executed in the beggining of renderFrame(). Resets the command allocator and lists, Sets SC buffer Present -> RT.
+	/// Clears render target view with RGBA color
 	/// </summary>
-	void frameBegin();
+	/// <param name="RGBAcolor">Clear color</param>
+	void frameBegin(const FLOAT* RGBAcolor);
+
+	/// <summary>
+	/// Executed in the end of renderFrame(). Sets buffer to RT -> Present. Closes the command list, executes the commands.
+	/// Presents the frame;
+	/// </summary>
+	void frameEnd();
 
 	/// <summary>
 	/// Creates the render target views
@@ -129,16 +143,22 @@ private: //Private Functions
 	/// Creates the graphics pipeline state
 	/// </summary>
 	void createPipelineState();
+
+	/// <summary>
+	/// Creates the viewport with the output frame's size
+	/// </summary>
+	/// <param name="frame">Qt output frame</param>
+	void createViewport(const QLabel* frame);
 private:
-	IDXGIFactory4Ptr dxgiFactory = nullptr; //Pointer to the DXGI Factory
-	IDXGIAdapter1Ptr adapter = nullptr; //Pointer to the used for rendering adapter
-	ID3D12DevicePtr device = nullptr; //Pointer to the used for rendering device
+	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
+	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter
+	ID3D12DevicePtr device = nullptr; //COM Pointer to the used for rendering device
 
-	ID3D12CommandQueuePtr commandQueue = nullptr; //Pointer to the command queue
-	ID3D12CommandAllocatorPtr commandAllocator = nullptr; //Pointer to the command allocator
-	ID3D12GraphicsCommandListPtr graphicsCommandList = nullptr; //Pointer to the command list
+	ID3D12CommandQueuePtr commandQueue = nullptr; //COM Pointer to the command queue
+	ID3D12CommandAllocatorPtr commandAllocator = nullptr; //COM Pointer to the command allocator
+	ID3D12GraphicsCommandListPtr graphicsCommandList = nullptr; //COM Pointer to the command list
 
-	ID3D12FencePtr frameFence = nullptr; //Pointer to the frame fence used to sync CPU and GPU
+	ID3D12FencePtr frameFence = nullptr; //COM Pointer to the frame fence used to sync CPU and GPU
 	HANDLE frameEventHandle = nullptr; //Handle for the frame fence event
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandle = {}; //Handle for the CPU descriptor
@@ -153,15 +173,20 @@ private:
 
 	UINT64 renderFrameFenceValue = 0; //Current render frame fence value
 
-	
-	IDXGISwapChain3Ptr swapChain3; //Pointer to the swap chain (3)
+	VertexBuffer* vertexBuffer; //Vertex buffer resource
+	IDXGISwapChain3Ptr swapChain3; //COM Pointer to the swap chain (3)
 	HWND rtvHandle = nullptr; //Handle to the render target view
 	UINT currentSwapChainBackBufferIndex = 1; //Current swap chain back buffer index
-	ID3D12ResourcePtr backBuffer = nullptr; //Pointer to the back buffer
+	ID3D12ResourcePtr backBuffer = nullptr; //COM Pointer to the back buffer
 	UINT rtvDescriptorSize = 0; //Render target view descriptor size
-	ID3D12DescriptorHeapPtr rtvHeap = nullptr; //Pointer to the render target view heap
+	ID3D12DescriptorHeapPtr rtvHeap = nullptr; //COM Pointer to the render target view heap
 	
-	ID3D12RootSignaturePtr rootSignature;
-	ID3D12PipelineStatePtr pipelineState;
+	ID3D12RootSignaturePtr rootSignature; //COM pointer to the root signature
+	ID3D12PipelineStatePtr pipelineState; //COM pointer to the pipeline state
+	D3D12_VIEWPORT viewport; //Viewport
+	D3D12_RECT scissorRect; //Viewport scissor rect
+
+	unsigned int frameIdx; //Current frame index
+	bool triangleDirection; //Direction of movement for the triangle
 
 };

@@ -49,6 +49,9 @@
     <Filter Include="HLSL\Overlays">
       <UniqueIdentifier>{5895d7c3-1519-41d4-acc4-3600e3267b7f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\Shape">
+      <UniqueIdentifier>{40070fe6-1cf1-4cf4-90eb-a1533c9693b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -78,6 +81,9 @@
     <ClCompile Include="VertexBuffer.cpp">
       <Filter>DXResources\VertexBuffer</Filter>
     </ClCompile>
+    <ClCompile Include="Shape.cpp">
+      <Filter>Utils\Shape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RTVResource.h">
@@ -103,6 +109,9 @@
     </ClInclude>
     <ClInclude Include="Vertex.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Shape.h">
+      <Filter>Utils\Shape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

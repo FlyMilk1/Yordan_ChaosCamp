@@ -40,28 +40,24 @@ void DXRenderer::render(const FLOAT* RGBAcolor)
 
 QImage DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
 {
-	frameBegin();
+	frameBegin(RGBAcolor);
 
-	currentSwapChainBackBufferIndex = swapChain3->GetCurrentBackBufferIndex();
-	setBarrier(D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	graphicsCommandList->SetGraphicsRootSignature(rootSignature);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE currentRTV = CPUDescriptorHandle;
-	currentRTV.ptr += currentSwapChainBackBufferIndex * rtvDescriptorSize;
-	graphicsCommandList->OMSetRenderTargets(1, &currentRTV, FALSE, nullptr);
-	graphicsCommandList->ClearRenderTargetView(currentRTV, RGBAcolor, 0, NULL);
+	graphicsCommandList->SetPipelineState(pipelineState);
+	graphicsCommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	graphicsCommandList->IASetVertexBuffers(0, 1, vertexBuffer->getVertexBufferViewPointer());
 
-	setBarrier(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
-	graphicsCommandList->Close();
+	graphicsCommandList->RSSetViewports(1, &viewport);
+	graphicsCommandList->RSSetScissorRects(1, &scissorRect);
 
-	ID3D12CommandList* ppCommandLists[] = { graphicsCommandList };
-	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	++renderFrameFenceValue;
-	commandQueue->Signal(frameFence, renderFrameFenceValue);
+	D3D12_VERTEX_BUFFER_VIEW vb = *vertexBuffer->getVertexBufferViewPointer();
+	graphicsCommandList->IASetVertexBuffers(0, 1, &vb);
 
-	waitForGPURenderFrame();
-	swapChain3->Present(1, 0);
+	graphicsCommandList->DrawInstanced(vertexBuffer->getVerticesCount(), 1, 0, 0);
 
+	frameEnd();
 	return {};
 }
 
@@ -69,11 +65,19 @@ void DXRenderer::prepareForRendering(const QLabel* frame)
 {
 	createDevice();
 	createCommandsManager();
+	vertexBuffer = new VertexBuffer(device);
 	createSwapChain(frame);
 	createRTVs();
 	/*ReadbackResource = GPUReadbackHeapResource(device, &RTResource);
 	placedFootprint = ReadbackResource.getPlacedFootprint();*/
 	createFence();
+	createRootSignature();
+	createPipelineState();
+	createViewport(frame);
+	vertexBuffer->addVerticesToBuffer(Shape::createCheckerPattern({ -1.0f,-1.0f }, { 1.0f,1.0f }, 8));
+	vertexBuffer->updateTriangles();
+	auto vb = vertexBuffer->getVertexBufferViewPointer();
+
 }
 
 void DXRenderer::createDevice()
@@ -240,13 +244,38 @@ void DXRenderer::createSwapChain(const QLabel* frame)
 	
 }
 
-void DXRenderer::frameBegin()
+void DXRenderer::frameBegin(const FLOAT* RGBAcolor)
 {
 	HRESULT hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
 
 	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
 	assert(SUCCEEDED(hr));
+
+	currentSwapChainBackBufferIndex = swapChain3->GetCurrentBackBufferIndex();
+	setBarrier(D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE currentRTV = CPUDescriptorHandle;
+	currentRTV.ptr += currentSwapChainBackBufferIndex * rtvDescriptorSize;
+	graphicsCommandList->OMSetRenderTargets(1, &currentRTV, FALSE, nullptr);
+	graphicsCommandList->ClearRenderTargetView(currentRTV, RGBAcolor, 0, NULL);
+}
+
+void DXRenderer::frameEnd()
+{
+	setBarrier(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+	graphicsCommandList->Close();
+
+	ID3D12CommandList* ppCommandLists[] = { graphicsCommandList };
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	++renderFrameFenceValue;
+	commandQueue->Signal(frameFence, renderFrameFenceValue);
+
+	
+	swapChain3->Present(1, 0);
+	waitForGPURenderFrame();
+	++frameIdx;
 }
 
 void DXRenderer::createRTVs()
@@ -322,6 +351,21 @@ void DXRenderer::createPipelineState()
 	HRESULT hr = device->CreateGraphicsPipelineState(&psDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(hr));
 
+}
+
+void DXRenderer::createViewport(const QLabel* frame)
+{
+	viewport = D3D12_VIEWPORT{};
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = frame->width();
+	viewport.Height = frame->height();
+
+	scissorRect = D3D12_RECT{};
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = frame->width();
+	scissorRect.bottom = frame->height();
 }
 
 
