@@ -1,14 +1,14 @@
 #include "MainWindow.h"
+#include <QMouseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
 
-    // Replace QLabel with ViewportLabel
-    viewport = new ViewportLabel(this);
-    viewport->setGeometry(ui.frameLabel->geometry());
-    viewport->show();
+    ui.frameLabel->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+    ui.frameLabel->setMouseTracking(true);
+    ui.frameLabel->installEventFilter(this);
 
 
 
@@ -33,8 +33,48 @@ void MainWindow::setFPSCounter(const unsigned int& fps)
 	ui.fpsLabel->setText(QString::fromStdString("FPS: "+std::to_string(fps)));
 }
 
-const ViewportLabel* MainWindow::getViewportLabel() const
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 {
-    return viewport;
+    if (obj == ui.frameLabel) {
+
+        if (event->type() == QEvent::MouseButtonPress) {
+            QMouseEvent* e = static_cast<QMouseEvent*>(event);
+
+            if (e->button() == Qt::LeftButton) {
+                dragging = true;
+                startPos = e->pos();
+                lastPos = startPos;
+                return true;
+            }
+        }
+
+        if (event->type() == QEvent::MouseMove && dragging) {
+            QMouseEvent* e = static_cast<QMouseEvent*>(event);
+
+            QPoint currentPos = e->pos();
+            QPoint deltaFromStart = currentPos - startPos;
+            QPoint deltaFromLast = currentPos - lastPos;
+
+            onViewportDrag(deltaFromStart, deltaFromLast);
+
+            lastPos = currentPos;
+            return true;
+        }
+
+        if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent* e = static_cast<QMouseEvent*>(event);
+
+            if (e->button() == Qt::LeftButton) {
+                dragging = false;
+                return true;
+            }
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
 }
 
+void MainWindow::onViewportDrag(const QPoint& deltaFromStart, const QPoint& deltaFromLast)
+{
+    emit viewportDrag(deltaFromStart, deltaFromLast);
+}

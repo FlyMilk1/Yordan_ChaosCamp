@@ -2,7 +2,6 @@
 #include <QtWidgets/QMainWindow>
 #include <QObject>
 #include "ui_MainWindow.h"
-#include "ViewportLabel.h"
 class MainWindow  : public QMainWindow
 {
 	Q_OBJECT
@@ -31,11 +30,26 @@ public://Public functions
 	void setFPSCounter(const unsigned int& fps);
 
 	/// <summary>
-	/// Gets the viewport label from the QT window
+	/// Event filter for mouse dragging. When object is the frameLabel it checks for mouse events.
 	/// </summary>
-	/// <returns>viewport label</returns>
-	const ViewportLabel* getViewportLabel()const;
+	/// <param name="obj">Object</param>
+	/// <param name="event">Event</param>
+	/// <returns></returns>
+	bool eventFilter(QObject* obj, QEvent* event) override;
+
+	/// <summary>
+	/// Executed when mouse dragging
+	/// </summary>
+	void onViewportDrag(const QPoint& deltaFromStart,
+		const QPoint& deltaFromLast);
+signals:
+	void viewportDrag(const QPoint& deltaFromStart,
+		const QPoint& deltaFromLast);
 private:
-	ViewportLabel* viewport;
+	bool dragging = false;
+	QPoint startPos;
+	QPoint lastPos;
+	QPoint deltaFromStart;
+	QPoint deltaFromLast;
 };
 

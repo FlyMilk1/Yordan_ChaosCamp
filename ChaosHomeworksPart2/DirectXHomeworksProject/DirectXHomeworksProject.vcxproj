@@ -168,7 +168,6 @@
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="RTVResource.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
-    <ClCompile Include="ViewportLabel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CustomStopwatch.h" />
@@ -181,7 +180,6 @@
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
-    <QtMoc Include="ViewportLabel.h" />
     <QtMoc Include="SnakeApp.h" />
     <ClInclude Include="FPSPresets.h" />
     <QtMoc Include="MainWindow.h" />

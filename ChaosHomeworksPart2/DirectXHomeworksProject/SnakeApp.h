@@ -7,7 +7,6 @@
 #include "DXRenderer.h"
 #include "FPSPresets.h"
 #include "FrameData.h"
-#include "ViewportLabel.h"
 class SnakeApp : public QObject
 {
 	Q_OBJECT
@@ -41,7 +40,8 @@ private slots:
 	/// <summary>
 	/// Executes when the mouse is dragged with left click
 	/// </summary>
-	void onCameraPan(const QPoint& offsetFromStart);
+	void onCameraPan(const QPoint& deltaFromStart,
+		const QPoint& deltaFromLast);
 private://Variables
 	UINT frameIndex=0; // Index of current frame
 	MainWindow* mainWindow = nullptr; //Pointer to the Main Window

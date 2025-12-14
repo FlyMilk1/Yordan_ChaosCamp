@@ -38,8 +38,8 @@ QImage DXRenderer::renderFrame(const FrameData& frameData, const bool& writeToFi
 	graphicsCommandList->IASetVertexBuffers(0, 1, &vb);
 
 	graphicsCommandList->SetGraphicsRoot32BitConstant(0, frameIdx, 0);
-	//graphicsCommandList->SetGraphicsRoot32BitConstant(1, *reinterpret_cast<const UINT*>(&frameData.offsetX), 1);
-	//graphicsCommandList->SetGraphicsRoot32BitConstant(2, *reinterpret_cast<const UINT*>(&frameData.offsetY), 2);
+	graphicsCommandList->SetGraphicsRoot32BitConstant(1, *reinterpret_cast<const UINT*>(&frameData.offsetX), 1);
+	graphicsCommandList->SetGraphicsRoot32BitConstant(2, *reinterpret_cast<const UINT*>(&frameData.offsetY), 2);
 
 	graphicsCommandList->DrawInstanced(vertexBuffer->getVerticesCount(), 1, 0, 0);
 

@@ -8,10 +8,11 @@ void SnakeApp::onIdleTick() {
 	//mainWindow->updateViewport(frame);
 }
 
-void SnakeApp::onCameraPan(const QPoint& offsetFromStart)
+void SnakeApp::onCameraPan(const QPoint& deltaFromStart,
+	const QPoint& deltaFromLast)
 {
-	frameData.offsetX = offsetFromStart.x();
-	frameData.offsetY = offsetFromStart.y();
+	frameData.offsetX += deltaFromLast.x() * 0.002;
+	frameData.offsetY += -deltaFromLast.y() * 0.002;
 }
 
 bool SnakeApp::init()
@@ -35,7 +36,7 @@ bool SnakeApp::init()
 	QObject::connect(fpsTimer, &QTimer::timeout, this, &SnakeApp::updateRenderStats);
 	fpsTimer->start(1'000);
 
-	QObject::connect(mainWindow->getViewportLabel(), &ViewportLabel::drag, this, &SnakeApp::onCameraPan);
+	QObject::connect(mainWindow, &MainWindow::viewportDrag, this, &SnakeApp::onCameraPan);
 
 	return true;
 }
