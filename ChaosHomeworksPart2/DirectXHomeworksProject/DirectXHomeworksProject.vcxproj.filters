@@ -52,6 +52,9 @@
     <Filter Include="Utils\Shape">
       <UniqueIdentifier>{40070fe6-1cf1-4cf4-90eb-a1533c9693b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Qt Files\Viewport">
+      <UniqueIdentifier>{eddd5f12-ff1b-4262-a12f-290ae9ecd4d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,6 +87,12 @@
     <ClCompile Include="Shape.cpp">
       <Filter>Utils\Shape</Filter>
     </ClCompile>
+    <ClCompile Include="GPUDefaultHeap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewportLabel.cpp">
+      <Filter>Qt Files\Viewport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RTVResource.h">
@@ -113,6 +122,12 @@
     <ClInclude Include="Shape.h">
       <Filter>Utils\Shape</Filter>
     </ClInclude>
+    <ClInclude Include="GPUDefaultHeap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameData.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="SnakeApp.h">
@@ -120,6 +135,9 @@
     </QtMoc>
     <QtMoc Include="MainWindow.h">
       <Filter>Qt Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ViewportLabel.h">
+      <Filter>Qt Files\Viewport</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

@@ -3,17 +3,15 @@ SnakeApp::SnakeApp() {}
 
 void SnakeApp::onIdleTick() { 
 	++frameIndex;
-	FLOAT frameColorRGB[3];
-	getFrameColor(frameIndex, frameColorRGB);
-	FLOAT frameColor[4] = {
-		frameColorRGB[0],
-		frameColorRGB[1],
-		frameColorRGB[2],
-		1.0f
-	};
 
-	QImage frame = renderer.renderFrame(frameColor, FALSE);
+	QImage frame = renderer.renderFrame(frameData, FALSE);
 	//mainWindow->updateViewport(frame);
+}
+
+void SnakeApp::onCameraPan(const QPoint& offsetFromStart)
+{
+	frameData.offsetX = offsetFromStart.x();
+	frameData.offsetY = offsetFromStart.y();
 }
 
 bool SnakeApp::init()
@@ -37,16 +35,12 @@ bool SnakeApp::init()
 	QObject::connect(fpsTimer, &QTimer::timeout, this, &SnakeApp::updateRenderStats);
 	fpsTimer->start(1'000);
 
+	QObject::connect(mainWindow->getViewportLabel(), &ViewportLabel::drag, this, &SnakeApp::onCameraPan);
+
 	return true;
 }
 
-void SnakeApp::getFrameColor(int i, float out[3]) {
-	// Use sine waves to smoothly cycle R, G, B over frames
-	float speed = 0.02f; // smaller = slower cycling
-	out[0] = 0.5f + 0.5f * sinf(i * speed + 0.0f);       // Red
-	out[1] = 0.5f + 0.5f * sinf(i * speed + 2.094f);     // Green (120° phase)
-	out[2] = 0.5f + 0.5f * sinf(i * speed + 4.188f);     // Blue (240° phase)
-}
+
 
 void SnakeApp::updateRenderStats()
 {

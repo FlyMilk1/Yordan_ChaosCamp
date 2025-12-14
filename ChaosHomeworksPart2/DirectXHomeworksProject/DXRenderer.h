@@ -4,7 +4,9 @@
 
 #include <d3d12.h>
 #pragma comment(lib, "d3d12.lib")
-
+#include "d3dx12_default.h"
+#include "d3dx12_core.h"
+#include "d3dx12_root_signature.h"
 #include "DXResource.h"
 
 #include <assert.h>
@@ -16,14 +18,12 @@
 #include "GPUReadbackHeapResource.h"
 #include "VertexBuffer.h"
 #include "Shape.h"
-#ifdef _DEBUG
-	#include <iostream>
-	#include "DirectXH.a0236926/x64/Debug/CompiledShaders/ConstColor.hlsl.h"
-	#include "DirectXH.a0236926/x64/Debug/CompiledShaders/ConstColorVS.hlsl.h"
-#else
-	#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColor.hlsl.h"
-	#include "DirectXH.a0236926/x64/Release/CompiledShaders/ConstColorVS.hlsl.h"
-#endif
+#include "GPUDefaultHeap.h"
+#include "FrameData.h"
+
+#include "CompiledShaders/ConstColor.hlsl.h"
+#include "CompiledShaders/ConstColorVS.hlsl.h"
+
 
 MAKE_SMART_COM_POINTER(IDXGIFactory4);
 MAKE_SMART_COM_POINTER(IDXGIAdapter1);
@@ -39,25 +39,30 @@ MAKE_SMART_COM_POINTER(ID3D12DescriptorHeap);
 MAKE_SMART_COM_POINTER(ID3DBlob);
 MAKE_SMART_COM_POINTER(ID3D12RootSignature);
 MAKE_SMART_COM_POINTER(ID3D12PipelineState);
+
 static UINT RGBA_COLOR_CHANNELS_COUNT = 4;
 class DXRenderer {
 public: //Public Functions
 	DXRenderer();
-	/// <summary>
-	/// Prepares and renders a frame
-	/// </summary>
-	/// <param name="RGBAcolor"></param>
-	void render(const FLOAT* RGBAcolor);
 
 	/// <summary>
 	/// Renders frame but REQUIRES PREPARATION with prepareForRendering() before use
 	/// </summary>
-	/// <param name="RGBAcolor"></param>
-	QImage renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile);
+	/// <param name="frameData">Frame Data for shaders</param>
+	/// <param name="writeToFile">Should write output frame to a .ppm file</param>
+	/// <returns></returns>
+	QImage renderFrame(const FrameData& frameData, const bool& writeToFile);
 	/// <summary>
 	/// Create the necessary DirectX infrastructure and rendering resources
 	/// </summary>
 	void prepareForRendering(const QLabel* frame);
+
+	/// <summary>
+	/// Returns a color based on input
+	/// </summary>
+	/// <param name="i">Input integer</param>
+	/// <param name="out">Array to write output on</param>
+	void getFrameColor(int i, float out[3]);
 
 	/// <summary>
 	/// Cleans up memory from rendering variables and pointers
@@ -149,6 +154,16 @@ private: //Private Functions
 	/// </summary>
 	/// <param name="frame">Qt output frame</param>
 	void createViewport(const QLabel* frame);
+
+	/// <summary>
+	/// Executes beforex creating the vertex buffer.
+	/// </summary>
+	void createTriangles();
+
+	/// <summary>
+	/// Creates the vertex buffer and the upload and default heap
+	/// </summary>
+	void createVertexBuffer();
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter
@@ -173,7 +188,7 @@ private:
 
 	UINT64 renderFrameFenceValue = 0; //Current render frame fence value
 
-	VertexBuffer* vertexBuffer; //Vertex buffer resource
+	std::unique_ptr<VertexBuffer> vertexBuffer; //Vertex buffer resource
 	IDXGISwapChain3Ptr swapChain3; //COM Pointer to the swap chain (3)
 	HWND rtvHandle = nullptr; //Handle to the render target view
 	UINT currentSwapChainBackBufferIndex = 1; //Current swap chain back buffer index
@@ -185,8 +200,9 @@ private:
 	ID3D12PipelineStatePtr pipelineState; //COM pointer to the pipeline state
 	D3D12_VIEWPORT viewport; //Viewport
 	D3D12_RECT scissorRect; //Viewport scissor rect
+	std::unique_ptr<GPUDefaultHeap> gpuDefaultHeap; //Default heap for vertices on the GPU
 
-	unsigned int frameIdx; //Current frame index
+	unsigned int frameIdx=0; //Current frame index
 	bool triangleDirection; //Direction of movement for the triangle
 
 };

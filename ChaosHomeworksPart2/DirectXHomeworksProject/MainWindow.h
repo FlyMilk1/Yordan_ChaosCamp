@@ -2,6 +2,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QObject>
 #include "ui_MainWindow.h"
+#include "ViewportLabel.h"
 class MainWindow  : public QMainWindow
 {
 	Q_OBJECT
@@ -28,7 +29,13 @@ public://Public functions
 	/// </summary>
 	/// <param name="fps">The value that will be displayed on the FPS counter</param>
 	void setFPSCounter(const unsigned int& fps);
-private://Variables
 
+	/// <summary>
+	/// Gets the viewport label from the QT window
+	/// </summary>
+	/// <returns>viewport label</returns>
+	const ViewportLabel* getViewportLabel()const;
+private:
+	ViewportLabel* viewport;
 };
 

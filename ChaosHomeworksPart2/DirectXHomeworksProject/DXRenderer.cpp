@@ -18,33 +18,15 @@ DXRenderer::DXRenderer()
 
 }
 
-void DXRenderer::render(const FLOAT* RGBAcolor)
+QImage DXRenderer::renderFrame(const FrameData& frameData, const bool& writeToFile)
 {
-	//CustomStopwatch preparationStopwatch;
-	//CustomStopwatch renderingStopwatch;
-
-	//preparationStopwatch.start();
-	//prepareForRendering();
-	//preparationStopwatch.stop();
-
-	//renderingStopwatch.start();
-	//renderFrame(RGBAcolor, TRUE);
-	//renderingStopwatch.stop();
-
-	//std::cout << "Successful rendering" << std::endl;
-	//std::cout << "Preparion time: " << preparationStopwatch.getDurationMilli().count() << " ms" << std::endl;
-	//std::cout << "Rendering time: " << renderingStopwatch.getDurationMilli().count() << " ms" << std::endl;
-
-	////cleanUp();
-}
-
-QImage DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
-{
-	frameBegin(RGBAcolor);
+	float frameColor[3];
+	getFrameColor(frameIdx, frameColor);
+	frameBegin(frameColor);
 
 	graphicsCommandList->SetGraphicsRootSignature(rootSignature);
-
 	graphicsCommandList->SetPipelineState(pipelineState);
+
 	graphicsCommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	graphicsCommandList->IASetVertexBuffers(0, 1, vertexBuffer->getVertexBufferViewPointer());
 
@@ -54,6 +36,10 @@ QImage DXRenderer::renderFrame(const FLOAT* RGBAcolor, const bool& writeToFile)
 
 	D3D12_VERTEX_BUFFER_VIEW vb = *vertexBuffer->getVertexBufferViewPointer();
 	graphicsCommandList->IASetVertexBuffers(0, 1, &vb);
+
+	graphicsCommandList->SetGraphicsRoot32BitConstant(0, frameIdx, 0);
+	//graphicsCommandList->SetGraphicsRoot32BitConstant(1, *reinterpret_cast<const UINT*>(&frameData.offsetX), 1);
+	//graphicsCommandList->SetGraphicsRoot32BitConstant(2, *reinterpret_cast<const UINT*>(&frameData.offsetY), 2);
 
 	graphicsCommandList->DrawInstanced(vertexBuffer->getVerticesCount(), 1, 0, 0);
 
@@ -65,7 +51,7 @@ void DXRenderer::prepareForRendering(const QLabel* frame)
 {
 	createDevice();
 	createCommandsManager();
-	vertexBuffer = new VertexBuffer(device);
+	vertexBuffer = std::make_unique<VertexBuffer>(device);
 	createSwapChain(frame);
 	createRTVs();
 	/*ReadbackResource = GPUReadbackHeapResource(device, &RTResource);
@@ -74,10 +60,8 @@ void DXRenderer::prepareForRendering(const QLabel* frame)
 	createRootSignature();
 	createPipelineState();
 	createViewport(frame);
-	vertexBuffer->addVerticesToBuffer(Shape::createCheckerPattern({ -1.0f,-1.0f }, { 1.0f,1.0f }, 8));
-	vertexBuffer->updateTriangles();
-	auto vb = vertexBuffer->getVertexBufferViewPointer();
-
+	createTriangles();
+	createVertexBuffer();
 }
 
 void DXRenderer::createDevice()
@@ -252,6 +236,7 @@ void DXRenderer::frameBegin(const FLOAT* RGBAcolor)
 	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
 	assert(SUCCEEDED(hr));
 
+	
 	currentSwapChainBackBufferIndex = swapChain3->GetCurrentBackBufferIndex();
 	setBarrier(D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -303,20 +288,25 @@ void DXRenderer::createRTVs()
 
 void DXRenderer::createRootSignature()
 {
-	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	CD3DX12_ROOT_PARAMETER1 rootParam{};
+	rootParam.InitAsConstants(3, 0, 0);
+
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
+	rootSignatureDesc.Init_1_1(1, &rootParam, 0, nullptr,
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ID3DBlobPtr signature;
 	ID3DBlobPtr error;
 
-	D3D12SerializeRootSignature(
+	HRESULT hr = D3DX12SerializeVersionedRootSignature(
 		&rootSignatureDesc,
-		D3D_ROOT_SIGNATURE_VERSION_1,
+		D3D_ROOT_SIGNATURE_VERSION_1_1,
 		&signature,
 		&error
 	);
+	assert(SUCCEEDED(hr));
 
-	HRESULT hr = device->CreateRootSignature(
+	hr = device->CreateRootSignature(
 		0,
 		signature->GetBufferPointer(),
 		signature->GetBufferSize(),
@@ -368,7 +358,57 @@ void DXRenderer::createViewport(const QLabel* frame)
 	scissorRect.bottom = frame->height();
 }
 
+void DXRenderer::createTriangles()
+{
+	//vertexBuffer->addVerticesToBuffer(Shape::createCheckerPattern({ -1.0f,-1.0f }, { 1.0f,1.0f }, 8));
+	vertexBuffer->addVerticesToBuffer({
+		{0.0, 0.5},
+		{0.5, -0.5},
+		{-0.5, -0.5}
+		});
+	vertexBuffer->updateTriangles();
+}
 
+void DXRenderer::createVertexBuffer()
+{
+	gpuDefaultHeap = std::make_unique<GPUDefaultHeap>(device, vertexBuffer->getVerticesCount());
+
+	HRESULT hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+
+	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
+	assert(SUCCEEDED(hr));
+
+	graphicsCommandList->CopyBufferRegion(gpuDefaultHeap->getD3D12Resource(), 
+		0, 
+		vertexBuffer->getD3D12Resource(), 
+		0, 
+		vertexBuffer->getVerticesCount() * sizeof(Vertex));
+	D3D12_RESOURCE_BARRIER vbBarrier{};
+	vbBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	vbBarrier.Transition.pResource = gpuDefaultHeap->getD3D12Resource();
+	vbBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	vbBarrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+	vbBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	graphicsCommandList->ResourceBarrier(1, &vbBarrier);
+
+	hr = graphicsCommandList->Close();
+	assert(SUCCEEDED(hr));
+
+	ID3D12CommandList* ppCommandLists[] = { graphicsCommandList };
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	waitForGPURenderFrame();
+}
+
+void DXRenderer::getFrameColor(int i, float out[3]) {
+	// Use sine waves to smoothly cycle R, G, B over frames
+	float speed = 0.02f; // smaller = slower cycling
+	out[0] = 0.5f + 0.5f * sinf(i * speed + 0.0f);       // Red
+	out[1] = 0.5f + 0.5f * sinf(i * speed + 2.094f);     // Green (120° phase)
+	out[2] = 0.5f + 0.5f * sinf(i * speed + 4.188f);     // Blue (240° phase)
+}
 void DXRenderer::cleanUp()
 {
 	if (adapter) adapter->Release();

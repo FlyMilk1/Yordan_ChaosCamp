@@ -1,13 +1,19 @@
 #include "MainWindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-	: QMainWindow(parent)
+    : QMainWindow(parent)
 {
-	ui.setupUi(this);
-	//setAttribute(Qt::WA_PaintOnScreen);
-	//setAttribute(Qt::WA_NoSystemBackground);
+    ui.setupUi(this);
+
+    // Replace QLabel with ViewportLabel
+    viewport = new ViewportLabel(this);
+    viewport->setGeometry(ui.frameLabel->geometry());
+    viewport->show();
+
+
 
 }
+
 
 MainWindow::~MainWindow()
 {}
@@ -25,5 +31,10 @@ void MainWindow::updateViewport(const QImage& frameImage)
 void MainWindow::setFPSCounter(const unsigned int& fps)
 {
 	ui.fpsLabel->setText(QString::fromStdString("FPS: "+std::to_string(fps)));
+}
+
+const ViewportLabel* MainWindow::getViewportLabel() const
+{
+    return viewport;
 }
 

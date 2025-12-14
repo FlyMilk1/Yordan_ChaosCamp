@@ -6,7 +6,8 @@
 #include "CustomStopwatch.h"
 #include "DXRenderer.h"
 #include "FPSPresets.h"
-
+#include "FrameData.h"
+#include "ViewportLabel.h"
 class SnakeApp : public QObject
 {
 	Q_OBJECT
@@ -18,12 +19,6 @@ public://Public functions
 	/// </summary>
 	bool init();
 private://Private functions
-	/// <summary>
-	/// Fills array with a color based on the frame index
-	/// </summary>
-	/// <param name="i">Frame index</param>
-	/// <param name="out">Color array</param>
-	void getFrameColor(int i, float out[3]);
 
 	/// <summary>
 	/// Initializes the application window
@@ -43,7 +38,10 @@ private slots:
 	/// </summary>
 	void onIdleTick();
 
-	
+	/// <summary>
+	/// Executes when the mouse is dragged with left click
+	/// </summary>
+	void onCameraPan(const QPoint& offsetFromStart);
 private://Variables
 	UINT frameIndex=0; // Index of current frame
 	MainWindow* mainWindow = nullptr; //Pointer to the Main Window
@@ -52,5 +50,6 @@ private://Variables
 	QApplication* app = nullptr; //Pointer to the Qt Application
 	QTimer* idleTimer = nullptr; //Pointer to the idle timer
 	QTimer* fpsTimer = nullptr; //Pointer to the FPS timer
+	FrameData frameData; //Frame data passed to the renderer for shaders
 };
 
