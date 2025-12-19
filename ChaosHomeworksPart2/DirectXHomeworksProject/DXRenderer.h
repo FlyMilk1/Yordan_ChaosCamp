@@ -20,6 +20,7 @@
 #include "Shape.h"
 #include "GPUDefaultHeap.h"
 #include "FrameData.h"
+#include "OutputTexture.h"
 
 #include "CompiledShaders/ConstColor.hlsl.h"
 #include "CompiledShaders/ConstColorVS.hlsl.h"
@@ -164,6 +165,16 @@ private: //Private Functions
 	/// Creates the vertex buffer and the upload and default heap
 	/// </summary>
 	void createVertexBuffer();
+
+	/// <summary>
+	/// Create the 2D output texture for RT
+	/// </summary>
+	void createOutputTexture();
+
+	/// <summary>
+	/// Create a Global Root Signature for RT
+	/// </summary>
+	void createGlobalRootSignature();
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter
@@ -205,4 +216,8 @@ private:
 	unsigned int frameIdx=0; //Current frame index
 	bool triangleDirection; //Direction of movement for the triangle
 
+	std::unique_ptr<OutputTexture> outputTexture; //2D output texture for RT
+	ID3D12DescriptorHeapPtr UAVDescHeapHandle; //Descriptor heap handle for Unordered Access View
+
+	ID3D12RootSignaturePtr globalRootSignature; //Global root signature for RT
 };

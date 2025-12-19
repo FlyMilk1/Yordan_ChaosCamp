@@ -124,10 +124,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DXC_SUPPORT_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir);$(SolutionDir)\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,10 +143,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);DXC_SUPPORT_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir);$(SolutionDir)\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -161,6 +161,8 @@
     <ClCompile Include="DXRenderer.cpp" />
     <ClCompile Include="DXResource.cpp" />
     <ClCompile Include="GPUDefaultHeap.cpp" />
+    <ClCompile Include="OutputTexture.cpp" />
+    <ClCompile Include="ShaderCompiler.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="SnakeApp.cpp" />
     <ClCompile Include="GPUReadbackHeapResource.cpp" />
@@ -176,7 +178,9 @@
     <ClInclude Include="FrameData.h" />
     <ClInclude Include="GPUDefaultHeap.h" />
     <ClInclude Include="GPUReadbackHeapResource.h" />
+    <ClInclude Include="OutputTexture.h" />
     <ClInclude Include="RTVResource.h" />
+    <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />

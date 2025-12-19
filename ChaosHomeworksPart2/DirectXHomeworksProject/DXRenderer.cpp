@@ -402,6 +402,60 @@ void DXRenderer::createVertexBuffer()
 	waitForGPURenderFrame();
 }
 
+void DXRenderer::createOutputTexture()
+{
+	outputTexture = std::make_unique<OutputTexture>(device);
+
+	D3D12_DESCRIPTOR_HEAP_DESC textureDescHeap = {};
+	textureDescHeap.NumDescriptors = 1;
+	textureDescHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	textureDescHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+	HRESULT hr = device->CreateDescriptorHeap(&textureDescHeap, IID_PPV_ARGS(&UAVDescHeapHandle));
+	assert(SUCCEEDED(hr));
+
+	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+	UAVDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	device->CreateUnorderedAccessView(outputTexture->getD3D12Resource(), nullptr, &UAVDesc, UAVDescHeapHandle->GetCPUDescriptorHandleForHeapStart());
+}
+
+void DXRenderer::createGlobalRootSignature()
+{
+	D3D12_DESCRIPTOR_RANGE uavRange = {};
+	uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	uavRange.NumDescriptors = 1;
+	uavRange.BaseShaderRegister = 0;
+	uavRange.RegisterSpace = 0;
+
+	D3D12_ROOT_PARAMETER rootParam = {};
+	rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParam.DescriptorTable.NumDescriptorRanges = 1;
+	rootParam.DescriptorTable.pDescriptorRanges = &uavRange;
+
+	D3D12_ROOT_SIGNATURE_DESC rootSigDesc = {};
+	rootSigDesc.NumParameters = 1;
+	rootSigDesc.pParameters = &rootParam;
+	rootSigDesc.NumStaticSamplers = 0;
+	rootSigDesc.pStaticSamplers = nullptr;
+	rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
+	ID3DBlobPtr sigBlob;
+	ID3DBlobPtr errorBlob;
+	HRESULT hr = D3D12SerializeRootSignature(
+		&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &sigBlob, &errorBlob);
+	assert(SUCCEEDED(hr));
+
+	hr = device->CreateRootSignature(
+		0,
+		sigBlob->GetBufferPointer(),
+		sigBlob->GetBufferSize(),
+		IID_PPV_ARGS(&globalRootSignature)
+	);
+	assert(SUCCEEDED(hr));
+}
+
 void DXRenderer::getFrameColor(int i, float out[3]) {
 	// Use sine waves to smoothly cycle R, G, B over frames
 	float speed = 0.02f; // smaller = slower cycling

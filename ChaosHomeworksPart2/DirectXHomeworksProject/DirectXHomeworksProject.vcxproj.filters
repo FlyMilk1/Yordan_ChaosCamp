@@ -55,6 +55,18 @@
     <Filter Include="Qt Files\Viewport">
       <UniqueIdentifier>{eddd5f12-ff1b-4262-a12f-290ae9ecd4d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HLSL\RayTracing">
+      <UniqueIdentifier>{341db61f-4e8f-4dec-852f-03704652e133}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\GPUDefaultHeap">
+      <UniqueIdentifier>{55452f7e-e95c-4b03-9fa8-85b52eecbf40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\2DOutputTexture">
+      <UniqueIdentifier>{1bee8b11-ca94-4dcc-8c8e-c249dc9786b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShaderCompiler">
+      <UniqueIdentifier>{b4fbfff9-7ba0-4456-a7e4-493bc9168684}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -88,10 +100,13 @@
       <Filter>Utils\Shape</Filter>
     </ClCompile>
     <ClCompile Include="GPUDefaultHeap.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>DXResources\GPUDefaultHeap</Filter>
     </ClCompile>
-    <ClCompile Include="ViewportLabel.cpp">
-      <Filter>Qt Files\Viewport</Filter>
+    <ClCompile Include="OutputTexture.cpp">
+      <Filter>DXResources\2DOutputTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderCompiler.cpp">
+      <Filter>ShaderCompiler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,11 +137,17 @@
     <ClInclude Include="Shape.h">
       <Filter>Utils\Shape</Filter>
     </ClInclude>
-    <ClInclude Include="GPUDefaultHeap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FrameData.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUDefaultHeap.h">
+      <Filter>DXResources\GPUDefaultHeap</Filter>
+    </ClInclude>
+    <ClInclude Include="OutputTexture.h">
+      <Filter>DXResources\2DOutputTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderCompiler.h">
+      <Filter>ShaderCompiler</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -135,9 +156,6 @@
     </QtMoc>
     <QtMoc Include="MainWindow.h">
       <Filter>Qt Files</Filter>
-    </QtMoc>
-    <QtMoc Include="ViewportLabel.h">
-      <Filter>Qt Files\Viewport</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
