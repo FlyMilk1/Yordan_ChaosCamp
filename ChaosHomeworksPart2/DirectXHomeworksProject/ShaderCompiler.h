@@ -18,7 +18,7 @@ public:
 	/// Compiles DXC shaders for RT
 	/// </summary>
 	/// <returns>Shader Blob</returns>
-	IDxcBlobPtr compileShaders(const std::wstring& fileName, const std::wstring& entryPoint, const std::wstring& target);
+	static IDxcBlobPtr compileShaders(const std::wstring& fileName, const std::wstring& entryPoint, const std::wstring& target);
 private:
 
 };

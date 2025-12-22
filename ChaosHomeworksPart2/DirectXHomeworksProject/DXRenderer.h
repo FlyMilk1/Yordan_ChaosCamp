@@ -175,6 +175,46 @@ private: //Private Functions
 	/// Create a Global Root Signature for RT
 	/// </summary>
 	void createGlobalRootSignature();
+
+	/// <summary>
+	/// Creates a D3D12_STATE_SUBOBJECT configured as a ray-generation shader library for a Direct3D 12 raytracing state object.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT representing the ray-generation library subobject, ready to be included in a raytracing state object.</returns>
+	D3D12_STATE_SUBOBJECT createRayGenLibSubObject();
+
+	/// <summary>
+	/// Creates a D3D12_STATE_SUBOBJECT configured as a miss shader library subobject for a Direct3D 12 ray-tracing state object.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT value representing the miss shader library subobject, ready to be included in a ray-tracing state object.</returns>
+	D3D12_STATE_SUBOBJECT createMissShaderLibSubObject();
+
+	/// <summary>
+	/// Creates a Direct3D 12 ray tracing shader configuration subobject.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT initialized as a ray tracing shader configuration subobject, suitable for inclusion in a Direct3D 12 state object.</returns>
+	D3D12_STATE_SUBOBJECT createRayTracingShaderConfigSubObject();
+
+	/// <summary>
+	/// Creates a D3D12_STATE_SUBOBJECT that represents pipeline configuration settings for a Direct3D 12 pipeline.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT configured as a pipeline configuration subobject.</returns>
+	D3D12_STATE_SUBOBJECT createPipelineConfigSubObject();
+
+	/// <summary>
+	/// Creates a D3D12 state subobject that represents the global root signature.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT configured to represent the global root signature for a pipeline state.</returns>
+	D3D12_STATE_SUBOBJECT createGlobalRootSignatureSubObject();
+
+	/// <summary>
+	/// Prepares DirectX for Ray Tracing
+	/// </summary>
+	void prepareForRayTracing();
+
+	/// <summary>
+	/// Prepares DirectX for Rasterization
+	/// </summary>
+	void prepareForRasterization();
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter
@@ -220,4 +260,16 @@ private:
 	ID3D12DescriptorHeapPtr UAVDescHeapHandle; //Descriptor heap handle for Unordered Access View
 
 	ID3D12RootSignaturePtr globalRootSignature; //Global root signature for RT
+
+	ID3DBlobPtr rayGenBlob; //Blob for the ray generation shader
+	D3D12_EXPORT_DESC rayGenExportDesc; //Export description for the ray generation shader
+	D3D12_DXIL_LIBRARY_DESC rayGenLibDesc; //DXIL library description for the ray generation shader
+
+	ID3DBlobPtr missShaderBlob; //Blob for the miss shader
+	D3D12_EXPORT_DESC missShaderExportDesc; //Export description for the miss shader
+	D3D12_DXIL_LIBRARY_DESC missShaderLibDesc; //DXIL library description for the miss shader
+
+	D3D12_RAYTRACING_SHADER_CONFIG rayTracingShaderConfig; //Ray tracing shader config
+	D3D12_RAYTRACING_PIPELINE_CONFIG rayTracingPipelineConfig; //Ray tracing pipeline config
+	D3D12_GLOBAL_ROOT_SIGNATURE globalRootSignatureDesc; //Global root signature description
 };

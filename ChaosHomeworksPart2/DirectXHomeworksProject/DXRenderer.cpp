@@ -1,5 +1,5 @@
 #include "DXRenderer.h"
-
+#include "ShaderCompiler.h"
 DXRenderer::DXRenderer()
 {
 #ifdef _DEBUG
@@ -454,6 +454,85 @@ void DXRenderer::createGlobalRootSignature()
 		IID_PPV_ARGS(&globalRootSignature)
 	);
 	assert(SUCCEEDED(hr));
+}
+
+D3D12_STATE_SUBOBJECT DXRenderer::createRayGenLibSubObject()
+{
+	rayGenBlob = ShaderCompiler::compileShaders(L"sp_raygen.hlsl", L"rayGen", L"lib_6_5");
+
+	rayGenExportDesc = D3D12_EXPORT_DESC{};
+	rayGenExportDesc.Name = L"rayGen";
+	rayGenExportDesc.Flags = D3D12_EXPORT_FLAG_NONE;
+
+	rayGenLibDesc.DXILLibrary.pShaderBytecode = rayGenBlob->GetBufferPointer();
+	rayGenLibDesc.DXILLibrary.BytecodeLength = rayGenBlob->GetBufferSize();
+	rayGenLibDesc.NumExports = 1;
+	rayGenLibDesc.pExports = &rayGenExportDesc;
+
+	D3D12_STATE_SUBOBJECT rayGenLibSubObject = {};
+	rayGenLibSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+	rayGenLibSubObject.pDesc = &rayGenLibDesc;
+
+	return rayGenLibSubObject;
+}
+
+D3D12_STATE_SUBOBJECT DXRenderer::createMissShaderLibSubObject()
+{
+	missShaderBlob = ShaderCompiler::compileShaders(L"sp_raygen.hlsl", L"miss", L"lib_6_5");
+
+	missShaderExportDesc = D3D12_EXPORT_DESC{};
+	missShaderExportDesc.Name = L"miss";
+	missShaderExportDesc.Flags = D3D12_EXPORT_FLAG_NONE;
+
+	missShaderLibDesc.DXILLibrary.pShaderBytecode = missShaderBlob->GetBufferPointer();
+	missShaderLibDesc.DXILLibrary.BytecodeLength = missShaderBlob->GetBufferSize();
+	missShaderLibDesc.NumExports = 1;
+	missShaderLibDesc.pExports = &missShaderExportDesc;
+
+	D3D12_STATE_SUBOBJECT missShaderLibSubObject = {};
+	missShaderLibSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+	missShaderLibSubObject.pDesc = &missShaderLibDesc;
+
+	return missShaderLibSubObject;
+}
+
+D3D12_STATE_SUBOBJECT DXRenderer::createRayTracingShaderConfigSubObject()
+{
+	rayTracingShaderConfig = D3D12_RAYTRACING_SHADER_CONFIG{};
+	rayTracingShaderConfig.MaxPayloadSizeInBytes = 4 * sizeof(float); // RGBA
+
+	D3D12_STATE_SUBOBJECT rayTracingShaderConfigSubObject = {};
+	rayTracingShaderConfigSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
+	rayTracingShaderConfigSubObject.pDesc = &rayTracingShaderConfig;
+
+	return rayTracingShaderConfigSubObject;
+}
+
+D3D12_STATE_SUBOBJECT DXRenderer::createPipelineConfigSubObject()
+{
+	rayTracingPipelineConfig = D3D12_RAYTRACING_PIPELINE_CONFIG{};
+	rayTracingPipelineConfig.MaxTraceRecursionDepth = 1;
+
+	D3D12_STATE_SUBOBJECT pipelineConfigSubObject = {};
+	pipelineConfigSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG;
+	pipelineConfigSubObject.pDesc = &rayTracingPipelineConfig;
+
+	return pipelineConfigSubObject;
+}
+
+D3D12_STATE_SUBOBJECT DXRenderer::createGlobalRootSignatureSubObject()
+{
+	globalRootSignatureDesc = D3D12_GLOBAL_ROOT_SIGNATURE{globalRootSignature};
+
+	D3D12_STATE_SUBOBJECT globalRootSignatureSubObject = {};
+	globalRootSignatureSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
+	globalRootSignatureSubObject.pDesc = &globalRootSignatureDesc;
+
+	return globalRootSignatureSubObject;
+}
+
+void DXRenderer::prepareForRayTracing()
+{
 }
 
 void DXRenderer::getFrameColor(int i, float out[3]) {
