@@ -21,6 +21,8 @@
 #include "GPUDefaultHeap.h"
 #include "FrameData.h"
 #include "OutputTexture.h"
+#include "SBTUploadHeap.h"
+#include "SBTDefaultHeap.h"
 
 #include "CompiledShaders/ConstColor.hlsl.h"
 #include "CompiledShaders/ConstColorVS.hlsl.h"
@@ -28,10 +30,10 @@
 
 MAKE_SMART_COM_POINTER(IDXGIFactory4);
 MAKE_SMART_COM_POINTER(IDXGIAdapter1);
-MAKE_SMART_COM_POINTER(ID3D12Device);
+MAKE_SMART_COM_POINTER(ID3D12Device5);
 MAKE_SMART_COM_POINTER(ID3D12CommandQueue);
 MAKE_SMART_COM_POINTER(ID3D12CommandAllocator);
-MAKE_SMART_COM_POINTER(ID3D12GraphicsCommandList);
+MAKE_SMART_COM_POINTER(ID3D12GraphicsCommandList4);
 MAKE_SMART_COM_POINTER(ID3D12Fence);
 MAKE_SMART_COM_POINTER(ID3D12Debug);
 MAKE_SMART_COM_POINTER(IDXGISwapChain1);
@@ -40,8 +42,12 @@ MAKE_SMART_COM_POINTER(ID3D12DescriptorHeap);
 MAKE_SMART_COM_POINTER(ID3DBlob);
 MAKE_SMART_COM_POINTER(ID3D12RootSignature);
 MAKE_SMART_COM_POINTER(ID3D12PipelineState);
+MAKE_SMART_COM_POINTER(ID3D12StateObject);
+MAKE_SMART_COM_POINTER(ID3D12StateObjectProperties);
 
 static UINT RGBA_COLOR_CHANNELS_COUNT = 4;
+static inline UINT alignedSize(UINT size, UINT alignBytes);
+
 class DXRenderer {
 public: //Public Functions
 	DXRenderer();
@@ -169,7 +175,8 @@ private: //Private Functions
 	/// <summary>
 	/// Create the 2D output texture for RT
 	/// </summary>
-	void createOutputTexture();
+	/// <param name="frame">Qt output frame</param>
+	void createOutputTexture(const QLabel* frame);
 
 	/// <summary>
 	/// Create a Global Root Signature for RT
@@ -207,9 +214,36 @@ private: //Private Functions
 	D3D12_STATE_SUBOBJECT createGlobalRootSignatureSubObject();
 
 	/// <summary>
+	/// Creates and initializes the ray tracing pipeline state used for GPU ray tracing operations.
+	/// </summary>
+	void createRayTracingPipelineState();
+
+	/// <summary>
+	/// Creates and initializes the shader binding table.
+	/// </summary>
+	void createShaderBindingTable(const QLabel* frame);
+
+	/// <summary>
+	/// Copies the Shader Binding Table (SBT) data for a ray-generation entry into the upload heap.
+	/// </summary>
+	/// <param name="rayGenID">Pointer identifying the ray-generation entry (or its associated SBT data) to copy into the upload heap.</param>
+	void copySBTDataToUploadHeap(void* rayGenID);
+
+	/// <summary>
+	/// Copies SBT data to the default heap used by the program.
+	/// </summary>
+	void copySBTDataToDefaultHeap();
+
+	/// <summary>
+	/// Prepares a dispatch rays descriptor using the specified size.
+	/// </summary>
+	/// <param name="size">The size used to configure the dispatch rays descriptor (passed by const reference).</param>
+	void prepareDispatchRaysDesc(const UINT& size, const QLabel* frame);
+
+	/// <summary>
 	/// Prepares DirectX for Ray Tracing
 	/// </summary>
-	void prepareForRayTracing();
+	void prepareForRayTracing(const QLabel* frame);
 
 	/// <summary>
 	/// Prepares DirectX for Rasterization
@@ -218,11 +252,11 @@ private: //Private Functions
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter
-	ID3D12DevicePtr device = nullptr; //COM Pointer to the used for rendering device
+	ID3D12Device5Ptr device = nullptr; //COM Pointer to the used for rendering device
 
 	ID3D12CommandQueuePtr commandQueue = nullptr; //COM Pointer to the command queue
 	ID3D12CommandAllocatorPtr commandAllocator = nullptr; //COM Pointer to the command allocator
-	ID3D12GraphicsCommandListPtr graphicsCommandList = nullptr; //COM Pointer to the command list
+	ID3D12GraphicsCommandList4Ptr graphicsCommandList = nullptr; //COM Pointer to the command list
 
 	ID3D12FencePtr frameFence = nullptr; //COM Pointer to the frame fence used to sync CPU and GPU
 	HANDLE frameEventHandle = nullptr; //Handle for the frame fence event
@@ -272,4 +306,10 @@ private:
 	D3D12_RAYTRACING_SHADER_CONFIG rayTracingShaderConfig; //Ray tracing shader config
 	D3D12_RAYTRACING_PIPELINE_CONFIG rayTracingPipelineConfig; //Ray tracing pipeline config
 	D3D12_GLOBAL_ROOT_SIGNATURE globalRootSignatureDesc; //Global root signature description
+
+	ID3D12StateObjectPtr rtStateObject; //COM Pointer to the ray tracing state object
+
+	std::unique_ptr <SBTUploadHeap> sbtUploadHeap; //Shader binding table upload heap
+	std::unique_ptr <SBTDefaultHeap> sbtDefaultHeap; //Shader binding table default heap
+	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = {}; //Dispatch rays descriptor
 };

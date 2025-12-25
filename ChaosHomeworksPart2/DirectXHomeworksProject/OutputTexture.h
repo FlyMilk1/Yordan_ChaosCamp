@@ -3,6 +3,7 @@
 class OutputTexture :
     public DXResource
 {
-    OutputTexture(ID3D12Device* device);
+public:
+    OutputTexture(ID3D12Device* device, const UINT& width, const UINT& height);
 };
 

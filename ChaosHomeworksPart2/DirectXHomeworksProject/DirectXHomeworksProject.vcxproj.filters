@@ -67,6 +67,12 @@
     <Filter Include="ShaderCompiler">
       <UniqueIdentifier>{b4fbfff9-7ba0-4456-a7e4-493bc9168684}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DXResources\SBTUploadHeap">
+      <UniqueIdentifier>{ed52c3a5-d6ff-4471-a5d2-b806edfb3466}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\SBTDefaultHeap">
+      <UniqueIdentifier>{9d1be7fa-360c-4d2c-8b73-a1d5d27c953f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -107,6 +113,12 @@
     </ClCompile>
     <ClCompile Include="ShaderCompiler.cpp">
       <Filter>ShaderCompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="SBTUploadHeap.cpp">
+      <Filter>DXResources\SBTUploadHeap</Filter>
+    </ClCompile>
+    <ClCompile Include="SBTDefaultHeap.cpp">
+      <Filter>DXResources\SBTDefaultHeap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +161,12 @@
     <ClInclude Include="ShaderCompiler.h">
       <Filter>ShaderCompiler</Filter>
     </ClInclude>
+    <ClInclude Include="SBTUploadHeap.h">
+      <Filter>DXResources\SBTUploadHeap</Filter>
+    </ClInclude>
+    <ClInclude Include="SBTDefaultHeap.h">
+      <Filter>DXResources\SBTDefaultHeap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="SnakeApp.h">
@@ -170,5 +188,10 @@
     <FxCompile Include="ConstColor.hlsl">
       <Filter>HLSL\Overlays</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ray_tracing_shaders.hlsl">
+      <Filter>HLSL\RayTracing</Filter>
+    </None>
   </ItemGroup>
 </Project>

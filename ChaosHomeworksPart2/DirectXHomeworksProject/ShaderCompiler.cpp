@@ -1,13 +1,14 @@
+#pragma comment(lib, "dxcompiler.lib")
 #include "ShaderCompiler.h"
 
 #include <assert.h>
 #include <iostream>
 IDxcBlobPtr ShaderCompiler::compileShaders(const std::wstring& fileName, const std::wstring& entryPoint, const std::wstring& target)
 {
-    HMODULE hDXC = LoadLibrary(L"dxcompiler.dll");
-    if (!hDXC) {
-        std::cerr << "Failed to load dxcompiler.dll\n";
-        return;
+    dxc::DXCLibraryDllLoader support;
+    if (FAILED(support.Initialize())) {
+        std::cerr << "Failed to initialize DXC support\n";
+        return nullptr;
     }
 
     IDxcLibraryPtr library;

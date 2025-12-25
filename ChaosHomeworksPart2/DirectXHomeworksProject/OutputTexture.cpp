@@ -1,11 +1,11 @@
 #include "OutputTexture.h"
 
-OutputTexture::OutputTexture(ID3D12Device* device)
+OutputTexture::OutputTexture(ID3D12Device* device, const UINT& width, const UINT& height)
 {
 	resourceDesc = {};
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	resourceDesc.Width = 800;
-	resourceDesc.Height = 800;
+	resourceDesc.Width = width;
+	resourceDesc.Height = height;
 	resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 

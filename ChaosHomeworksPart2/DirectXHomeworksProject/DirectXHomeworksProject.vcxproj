@@ -132,6 +132,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)\include\directx\dxcompiler.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>6.3</ShaderModel>
@@ -151,6 +152,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)\include\directx\dxcompiler.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>6.3</ShaderModel>
@@ -162,6 +164,8 @@
     <ClCompile Include="DXResource.cpp" />
     <ClCompile Include="GPUDefaultHeap.cpp" />
     <ClCompile Include="OutputTexture.cpp" />
+    <ClCompile Include="SBTDefaultHeap.cpp" />
+    <ClCompile Include="SBTUploadHeap.cpp" />
     <ClCompile Include="ShaderCompiler.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="SnakeApp.cpp" />
@@ -180,6 +184,8 @@
     <ClInclude Include="GPUReadbackHeapResource.h" />
     <ClInclude Include="OutputTexture.h" />
     <ClInclude Include="RTVResource.h" />
+    <ClInclude Include="SBTDefaultHeap.h" />
+    <ClInclude Include="SBTUploadHeap.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Vertex.h" />
@@ -226,7 +232,13 @@
       <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatWarningAsError>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_const_color_vs</VariableName>
     </FxCompile>
-    <FxCompile Include="ray_tracing_shaders.hlsl" />
+    <None Include="ray_tracing_shaders.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">rayGen</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">rayGen</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.5</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.5</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(QtMsBuild)\qt.targets" Condition="Exists('$(QtMsBuild)\qt.targets')" />
