@@ -1,20 +1,22 @@
 #pragma once
 #include <string>
 #include <windows.h>
-#include <dxc/dxcapi.h>
+#include <dxcapi.h>
 #include <comdef.h>
 #include <wrl/client.h>
 #include <iostream>
-#include <dxc/dxcapi.use.h>
 
 
 #define MAKE_SMART_COM_POINTER(_a) _COM_SMARTPTR_TYPEDEF(_a, __uuidof(_a))
 
-MAKE_SMART_COM_POINTER(IDxcLibrary);
-MAKE_SMART_COM_POINTER(IDxcCompiler);
+MAKE_SMART_COM_POINTER(IDxcUtils);
+MAKE_SMART_COM_POINTER(IDxcCompiler3);
 MAKE_SMART_COM_POINTER(IDxcBlobEncoding);
 MAKE_SMART_COM_POINTER(IDxcOperationResult);
 MAKE_SMART_COM_POINTER(IDxcBlob);
+MAKE_SMART_COM_POINTER(IDxcIncludeHandler);
+MAKE_SMART_COM_POINTER(IDxcResult);
+MAKE_SMART_COM_POINTER(IDxcBlobUtf8);
 
 class ShaderCompiler
 {

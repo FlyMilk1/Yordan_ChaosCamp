@@ -75,6 +75,12 @@ public: //Public Functions
 	/// Cleans up memory from rendering variables and pointers
 	/// </summary>
 	void cleanUp();
+
+	/// <summary>
+	/// Checks whether ray tracing is supported on the current system or environment.
+	/// </summary>
+	void checkRayTracingSupport();
+
 private: //Private Functions
 	/// <summary>
 	/// Create ID3D12Device, an interface for accessing the GPU for use with Direct3D API

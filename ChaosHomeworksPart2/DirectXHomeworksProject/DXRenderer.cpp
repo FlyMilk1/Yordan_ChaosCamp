@@ -3,6 +3,7 @@
 DXRenderer::DXRenderer()
 {
 #ifdef _DEBUG
+#include <iostream>
 	ID3D12DebugPtr debugController = nullptr;
 	HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&debugController));
 
@@ -68,7 +69,7 @@ void DXRenderer::prepareForRendering(const QLabel* frame)
 	/*ReadbackResource = GPUReadbackHeapResource(device, &RTResource);
 	placedFootprint = ReadbackResource.getPlacedFootprint();*/
 	createFence();
-
+	checkRayTracingSupport();
 	createRootSignature();
 	createPipelineState();
 	createViewport(frame);
@@ -486,7 +487,7 @@ void DXRenderer::createGlobalRootSignature()
 
 D3D12_STATE_SUBOBJECT DXRenderer::createRayGenLibSubObject()
 {
-	rayGenBlob = ShaderCompiler::compileShaders(L"sp_raygen.hlsl", L"rayGen", L"lib_6_5");
+	rayGenBlob = ShaderCompiler::compileShaders(L"ray_tracing_shader.hlsl", L"rayGen", L"lib_6_5");
 
 	rayGenExportDesc = D3D12_EXPORT_DESC{};
 	rayGenExportDesc.Name = L"rayGen";
@@ -506,7 +507,7 @@ D3D12_STATE_SUBOBJECT DXRenderer::createRayGenLibSubObject()
 
 D3D12_STATE_SUBOBJECT DXRenderer::createMissShaderLibSubObject()
 {
-	missShaderBlob = ShaderCompiler::compileShaders(L"sp_raygen.hlsl", L"miss", L"lib_6_5");
+	missShaderBlob = ShaderCompiler::compileShaders(L"ray_tracing_shader.hlsl", L"miss", L"lib_6_5");
 
 	missShaderExportDesc = D3D12_EXPORT_DESC{};
 	missShaderExportDesc.Name = L"miss";
@@ -527,7 +528,7 @@ D3D12_STATE_SUBOBJECT DXRenderer::createMissShaderLibSubObject()
 D3D12_STATE_SUBOBJECT DXRenderer::createRayTracingShaderConfigSubObject()
 {
 	rayTracingShaderConfig = D3D12_RAYTRACING_SHADER_CONFIG{};
-	rayTracingShaderConfig.MaxPayloadSizeInBytes = 4 * sizeof(float); // RGBA
+	rayTracingShaderConfig.MaxPayloadSizeInBytes = 4 * 4; // RGBA
 
 	D3D12_STATE_SUBOBJECT rayTracingShaderConfigSubObject = {};
 	rayTracingShaderConfigSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
@@ -581,7 +582,12 @@ void DXRenderer::createRayTracingPipelineState()
 	rtpsoDesc.pSubobjects = subObjects.data();
 
 	HRESULT hr = device->CreateStateObject(&rtpsoDesc, IID_PPV_ARGS(&rtStateObject));
-	assert(SUCCEEDED(hr));
+	if (FAILED(hr))
+	{
+		std::cerr << "CreateStateObject failed, HRESULT = 0x" << std::hex << hr << std::endl;
+		assert(false);
+	}
+
 }
 
 void DXRenderer::createShaderBindingTable(const QLabel* frame)
@@ -668,7 +674,22 @@ void DXRenderer::cleanUp()
 	if (frameFence) frameFence->Release();
 	if (frameEventHandle) CloseHandle(frameEventHandle);
 }
+void DXRenderer::checkRayTracingSupport()
+{
+	D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5 = {};
+	HRESULT hr = device->CheckFeatureSupport(
+		D3D12_FEATURE_D3D12_OPTIONS5,
+		&options5,
+		sizeof(options5));
+
+	if (FAILED(hr) || options5.RaytracingTier == D3D12_RAYTRACING_TIER_NOT_SUPPORTED)
+	{
+		std::cerr << "Ray tracing not supported on this device!" << std::endl;
+		assert(false);
+	}
+}
 
 static inline UINT alignedSize(UINT size, UINT alignBytes) {
 	return alignBytes * (size / alignBytes + (size % alignBytes ? 1 : 0));
 }
+
