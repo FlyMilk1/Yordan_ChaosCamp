@@ -5,13 +5,14 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
-
+    
+    // Mouse events still handled by frameLabel
     ui.frameLabel->setAttribute(Qt::WA_TransparentForMouseEvents, false);
     ui.frameLabel->setMouseTracking(true);
     ui.frameLabel->installEventFilter(this);
 
-
-
+    // Keyboard events handled globally
+    qApp->installEventFilter(this);
 }
 
 
@@ -35,6 +36,7 @@ void MainWindow::setFPSCounter(const unsigned int& fps)
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 {
+	/// Handle mouse events for dragging on the frameLabel
     if (obj == ui.frameLabel) {
 
         if (event->type() == QEvent::MouseButtonPress) {
@@ -70,11 +72,25 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
             }
         }
     }
-
+    // Keyboard events
+    if (event->type() == QEvent::KeyRelease) {
+		//Switch rendering mode on space key press
+        QKeyEvent* e = static_cast<QKeyEvent*>(event);
+        if (e->key() == Qt::Key_Space) {
+            onRenderingModeChanged();
+            return true;
+		}
+    }
+    
     return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::onViewportDrag(const QPoint& deltaFromStart, const QPoint& deltaFromLast)
 {
     emit viewportDrag(deltaFromStart, deltaFromLast);
+}
+
+void MainWindow::onRenderingModeChanged()
+{
+	emit switchRenderingModeSignal();
 }

@@ -62,7 +62,7 @@ public: //Public Functions
 	/// <summary>
 	/// Create the necessary DirectX infrastructure and rendering resources
 	/// </summary>
-	void prepareForRendering(const QLabel* frame);
+	void prepareForRendering(const QLabel* frame, const bool& useRayTracing);
 
 	/// <summary>
 	/// Returns a color based on input
@@ -254,7 +254,7 @@ private: //Private Functions
 	/// <summary>
 	/// Prepares DirectX for Rasterization
 	/// </summary>
-	void prepareForRasterization();
+	void prepareForRasterization(const QLabel* frame);
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter
@@ -318,4 +318,6 @@ private:
 	std::unique_ptr <SBTUploadHeap> sbtUploadHeap; //Shader binding table upload heap
 	std::unique_ptr <SBTDefaultHeap> sbtDefaultHeap; //Shader binding table default heap
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = {}; //Dispatch rays descriptor
+
+	bool isUsingRayTracing = false; //Whether ray tracing is being used or rasterization
 };

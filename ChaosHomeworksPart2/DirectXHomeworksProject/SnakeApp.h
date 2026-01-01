@@ -40,8 +40,11 @@ private slots:
 	/// <summary>
 	/// Executes when the mouse is dragged with left click
 	/// </summary>
-	void onCameraPan(const QPoint& deltaFromStart,
-		const QPoint& deltaFromLast);
+	void onCameraPan(const QPoint& deltaFromStart, const QPoint& deltaFromLast);
+	/// <summary>
+	/// Switches the current rendering mode.
+	/// </summary>
+	void switchRenderingMode();
 private://Variables
 	UINT frameIndex=0; // Index of current frame
 	MainWindow* mainWindow = nullptr; //Pointer to the Main Window
@@ -51,5 +54,6 @@ private://Variables
 	QTimer* idleTimer = nullptr; //Pointer to the idle timer
 	QTimer* fpsTimer = nullptr; //Pointer to the FPS timer
 	FrameData frameData; //Frame data passed to the renderer for shaders
+	bool isUsingRayTracing = true; //Whether ray tracing is used or not
 };
 

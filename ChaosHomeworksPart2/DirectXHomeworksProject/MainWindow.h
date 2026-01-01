@@ -30,11 +30,11 @@ public://Public functions
 	void setFPSCounter(const unsigned int& fps);
 
 	/// <summary>
-	/// Event filter for mouse dragging. When object is the frameLabel it checks for mouse events.
+	/// Overrides QObject::eventFilter to intercept events sent to watched objects before they reach their normal handlers.
 	/// </summary>
-	/// <param name="obj">Object</param>
-	/// <param name="event">Event</param>
-	/// <returns></returns>
+	/// <param name="obj">Pointer to the object that the event is being sent to (the watched object).</param>
+	/// <param name="event">Pointer to the event being delivered.</param>
+	/// <returns>true if the event was handled and should not be propagated to the target object; false to allow normal processing.</returns>
 	bool eventFilter(QObject* obj, QEvent* event) override;
 
 	/// <summary>
@@ -42,9 +42,15 @@ public://Public functions
 	/// </summary>
 	void onViewportDrag(const QPoint& deltaFromStart,
 		const QPoint& deltaFromLast);
+
+	/// <summary>
+	/// Called when the rendering mode changes to perform any necessary updates.
+	/// </summary>
+	void onRenderingModeChanged();
 signals:
 	void viewportDrag(const QPoint& deltaFromStart,
 		const QPoint& deltaFromLast);
+    void switchRenderingModeSignal();
 private:
 	bool dragging = false;
 	QPoint startPos;

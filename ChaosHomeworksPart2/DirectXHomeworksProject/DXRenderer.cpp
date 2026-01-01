@@ -25,58 +25,67 @@ QImage DXRenderer::renderFrame(const FrameData& frameData, const bool& writeToFi
 	getFrameColor(frameIdx, frameColor);
 	frameBegin(frameColor);
 
-	/*graphicsCommandList->SetGraphicsRootSignature(rootSignature);
-	graphicsCommandList->SetPipelineState(pipelineState);
+	if (isUsingRayTracing) {
+		ID3D12DescriptorHeap* descriptorHeaps[] = { UAVDescHeapHandle };
+		graphicsCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	graphicsCommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	graphicsCommandList->IASetVertexBuffers(0, 1, vertexBuffer->getVertexBufferViewPointer());
+		graphicsCommandList->SetComputeRootSignature(globalRootSignature);
+
+		graphicsCommandList->SetComputeRootDescriptorTable(0, UAVDescHeapHandle->GetGPUDescriptorHandleForHeapStart());
+
+		graphicsCommandList->SetPipelineState1(rtStateObject);
+
+		graphicsCommandList->DispatchRays(&dispatchRaysDesc);
+	}
+	else {
+
+		graphicsCommandList->SetGraphicsRootSignature(rootSignature);
+		graphicsCommandList->SetPipelineState(pipelineState);
+
+		graphicsCommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		graphicsCommandList->IASetVertexBuffers(0, 1, vertexBuffer->getVertexBufferViewPointer());
 
 
-	graphicsCommandList->RSSetViewports(1, &viewport);
-	graphicsCommandList->RSSetScissorRects(1, &scissorRect);
+		graphicsCommandList->RSSetViewports(1, &viewport);
+		graphicsCommandList->RSSetScissorRects(1, &scissorRect);
 
-	D3D12_VERTEX_BUFFER_VIEW vb = *vertexBuffer->getVertexBufferViewPointer();
-	graphicsCommandList->IASetVertexBuffers(0, 1, &vb);
+		D3D12_VERTEX_BUFFER_VIEW vb = *vertexBuffer->getVertexBufferViewPointer();
+		graphicsCommandList->IASetVertexBuffers(0, 1, &vb);
 
-	graphicsCommandList->SetGraphicsRoot32BitConstant(0, frameIdx, 0);
-	graphicsCommandList->SetGraphicsRoot32BitConstant(1, *reinterpret_cast<const UINT*>(&frameData.offsetX), 1);
-	graphicsCommandList->SetGraphicsRoot32BitConstant(2, *reinterpret_cast<const UINT*>(&frameData.offsetY), 2);
+		graphicsCommandList->SetGraphicsRoot32BitConstant(0, frameIdx, 0);
+		graphicsCommandList->SetGraphicsRoot32BitConstant(1, *reinterpret_cast<const UINT*>(&frameData.offsetX), 1);
+		graphicsCommandList->SetGraphicsRoot32BitConstant(2, *reinterpret_cast<const UINT*>(&frameData.offsetY), 2);
 
-	graphicsCommandList->DrawInstanced(vertexBuffer->getVerticesCount(), 1, 0, 0);*/
+		graphicsCommandList->DrawInstanced(vertexBuffer->getVerticesCount(), 1, 0, 0);
+	}
 
-	ID3D12DescriptorHeap* descriptorHeaps[] = {UAVDescHeapHandle};
-	graphicsCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
-	graphicsCommandList->SetComputeRootSignature(globalRootSignature);
-
-	graphicsCommandList->SetComputeRootDescriptorTable(0, UAVDescHeapHandle->GetGPUDescriptorHandleForHeapStart());
-
-	graphicsCommandList->SetPipelineState1(rtStateObject);
-
-	graphicsCommandList->DispatchRays(&dispatchRaysDesc);
-
+	
 	frameEnd();
 	return {};
 }
 
-void DXRenderer::prepareForRendering(const QLabel* frame)
+void DXRenderer::prepareForRendering(const QLabel* frame, const bool& useRayTracing)
 {
-	createDevice();
-	createCommandsManager();
-	vertexBuffer = std::make_unique<VertexBuffer>(device);
-	createSwapChain(frame);
-	createRTVs();
-	/*ReadbackResource = GPUReadbackHeapResource(device, &RTResource);
-	placedFootprint = ReadbackResource.getPlacedFootprint();*/
-	createFence();
-	checkRayTracingSupport();
-	createRootSignature();
-	createPipelineState();
-	createViewport(frame);
-	createTriangles();
-	createVertexBuffer();
+	if (!device) {
+		createDevice();
+		createCommandsManager();
+		vertexBuffer = std::make_unique<VertexBuffer>(device);
+		createSwapChain(frame);
+		createRTVs();
+		/*ReadbackResource = GPUReadbackHeapResource(device, &RTResource);
+		placedFootprint = ReadbackResource.getPlacedFootprint();*/
+		createFence();
+		checkRayTracingSupport();
+	}
+	
+	isUsingRayTracing = useRayTracing;
 
-	prepareForRayTracing(frame);
+	if (useRayTracing) {
+		prepareForRayTracing(frame);
+	}
+	else {
+		prepareForRasterization(frame);
+	}
 }
 
 void DXRenderer::createDevice()
@@ -210,6 +219,9 @@ QImage DXRenderer::renderTargetDataToQimage(void* renderTargetData, const UINT64
 
 void DXRenderer::createSwapChain(const QLabel* frame)
 {
+	if (swapChain3) {
+		return;
+	}
 	IDXGISwapChain1Ptr swapChain1;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 	swapChainDesc.Width = frame->width();
@@ -245,6 +257,7 @@ void DXRenderer::createSwapChain(const QLabel* frame)
 
 void DXRenderer::frameBegin(const FLOAT* RGBAcolor)
 {
+
 	HRESULT hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
 
@@ -255,11 +268,14 @@ void DXRenderer::frameBegin(const FLOAT* RGBAcolor)
 	currentSwapChainBackBufferIndex = swapChain3->GetCurrentBackBufferIndex();
 	setBarrier(D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	D3D12_RESOURCE_BARRIER barrier = {};
-	barrier.Transition.pResource = outputTexture->getD3D12Resource();
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	graphicsCommandList->ResourceBarrier(1, &barrier);
+	if (isUsingRayTracing) {
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Transition.pResource = outputTexture->getD3D12Resource();
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		graphicsCommandList->ResourceBarrier(1, &barrier);
+	}
+	
 
 	D3D12_CPU_DESCRIPTOR_HANDLE currentRTV = CPUDescriptorHandle;
 	currentRTV.ptr += currentSwapChainBackBufferIndex * rtvDescriptorSize;
@@ -269,15 +285,31 @@ void DXRenderer::frameBegin(const FLOAT* RGBAcolor)
 
 void DXRenderer::frameEnd()
 {
-	D3D12_RESOURCE_BARRIER barrier = {};
-	barrier.Transition.pResource = outputTexture->getD3D12Resource();
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-	graphicsCommandList->ResourceBarrier(1, &barrier);
+	if (isUsingRayTracing) {
 
-	graphicsCommandList->CopyResource(backBuffer, outputTexture->getD3D12Resource());
+		D3D12_RESOURCE_BARRIER barriers[2] = {};
 
-	setBarrier(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barriers[0].Transition.pResource = outputTexture->getD3D12Resource();
+		barriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+		barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+		barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barriers[1].Transition.pResource = backBuffer;
+		barriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+		barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+		graphicsCommandList->ResourceBarrier(2, barriers);
+
+		graphicsCommandList->CopyResource(backBuffer, outputTexture->getD3D12Resource());
+
+		setBarrier(D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
+	}
+	else {
+		setBarrier(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	}
 
 	graphicsCommandList->Close();
 
@@ -618,6 +650,7 @@ void DXRenderer::copySBTDataToUploadHeap(void* rayGenID)
 
 void DXRenderer::copySBTDataToDefaultHeap()
 {
+
 	HRESULT hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
 	hr = graphicsCommandList->Reset(commandAllocator, nullptr);
@@ -654,6 +687,15 @@ void DXRenderer::prepareForRayTracing(const QLabel* frame)
 	createRayTracingPipelineState();
 	createOutputTexture(frame);
 	createShaderBindingTable(frame);
+}
+
+void DXRenderer::prepareForRasterization(const QLabel* frame)
+{
+	createRootSignature();
+	createPipelineState();
+	createViewport(frame);
+	createTriangles();
+	createVertexBuffer();
 }
 
 void DXRenderer::getFrameColor(int i, float out[3]) {
