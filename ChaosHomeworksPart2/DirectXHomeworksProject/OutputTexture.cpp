@@ -16,15 +16,13 @@ OutputTexture::OutputTexture(ID3D12Device* device, const UINT& width, const UINT
     resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
     resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
-    // Use correct heap properties
     heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
-    // FIXED: Use correct initial state for UAV texture
     HRESULT hr = device->CreateCommittedResource(
         &heapProperties,
-        D3D12_HEAP_FLAG_NONE,  // Changed from ALLOW_ALL_BUFFERS_AND_TEXTURES
+        D3D12_HEAP_FLAG_NONE,
         &resourceDesc,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,  // Changed from GENERIC_READ
+        D3D12_RESOURCE_STATE_COMMON,
         nullptr,
         IID_PPV_ARGS(&d3d12Resource)
     );

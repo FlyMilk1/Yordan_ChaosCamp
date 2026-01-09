@@ -18,7 +18,11 @@ void SnakeApp::onCameraPan(const QPoint& deltaFromStart,
 void SnakeApp::switchRenderingMode()
 {
 	isUsingRayTracing = !isUsingRayTracing;
+	idleTimer->stop();
+	fpsTimer->stop();
 	renderer.prepareForRendering(mainWindow->getRenderFrame(), isUsingRayTracing);
+	idleTimer->start(FPS_Uncapped);
+	fpsTimer->start(1'000);
 }
 
 bool SnakeApp::init()

@@ -73,6 +73,12 @@
     <Filter Include="DXResources\SBTDefaultHeap">
       <UniqueIdentifier>{9d1be7fa-360c-4d2c-8b73-a1d5d27c953f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DXResources\AccelerationStructureData">
+      <UniqueIdentifier>{a8b1a554-b023-4177-bffc-2246de791a58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\CameraBuffer">
+      <UniqueIdentifier>{a109fd9c-b587-4c03-9edb-6db13f1a0a70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -119,6 +125,12 @@
     </ClCompile>
     <ClCompile Include="SBTDefaultHeap.cpp">
       <Filter>DXResources\SBTDefaultHeap</Filter>
+    </ClCompile>
+    <ClCompile Include="AccelerationStructureData.cpp">
+      <Filter>DXResources\AccelerationStructureData</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraBufferResource.cpp">
+      <Filter>DXResources\CameraBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,6 +179,15 @@
     <ClInclude Include="SBTDefaultHeap.h">
       <Filter>DXResources\SBTDefaultHeap</Filter>
     </ClInclude>
+    <ClInclude Include="AccelerationStructureData.h">
+      <Filter>DXResources\AccelerationStructureData</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraBuffer.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraBufferResource.h">
+      <Filter>DXResources\CameraBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="SnakeApp.h">
@@ -190,7 +211,11 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ray_tracing_shaders.hlsl">
+    <CopyFileToFolders Include="dlls\dxcompiler.dll" />
+    <CopyFileToFolders Include="dlls\dxil.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ray_tracing_shader.hlsl">
       <Filter>HLSL\RayTracing</Filter>
     </None>
   </ItemGroup>

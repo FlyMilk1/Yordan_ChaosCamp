@@ -165,6 +165,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AccelerationStructureData.cpp" />
+    <ClCompile Include="CameraBufferResource.cpp" />
     <ClCompile Include="CustomStopwatch.cpp" />
     <ClCompile Include="DXRenderer.cpp" />
     <ClCompile Include="DXResource.cpp" />
@@ -182,6 +184,9 @@
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AccelerationStructureData.h" />
+    <ClInclude Include="CameraBuffer.h" />
+    <ClInclude Include="CameraBufferResource.h" />
     <ClInclude Include="CustomStopwatch.h" />
     <ClInclude Include="DXRenderer.h" />
     <ClInclude Include="DXResource.h" />

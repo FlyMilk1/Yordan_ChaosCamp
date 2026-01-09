@@ -23,6 +23,8 @@
 #include "OutputTexture.h"
 #include "SBTUploadHeap.h"
 #include "SBTDefaultHeap.h"
+#include "AccelerationStructureData.h"
+#include <CameraBufferResource.h>
 
 #include "CompiledShaders/ConstColor.hlsl.h"
 #include "CompiledShaders/ConstColorVS.hlsl.h"
@@ -220,6 +222,18 @@ private: //Private Functions
 	D3D12_STATE_SUBOBJECT createGlobalRootSignatureSubObject();
 
 	/// <summary>
+	/// Creates a D3D12_STATE_SUBOBJECT configured for a closer hit shader used in a D3D12 raytracing pipeline.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT that represents the configured closer hit shader subobject.</returns>
+	D3D12_STATE_SUBOBJECT createCloserHitShaderSubObject();
+
+	/// <summary>
+	/// Creates a D3D12_STATE_SUBOBJECT configured as a hit group subobject for a Direct3D 12 raytracing pipeline.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT representing the hit group subobject.</returns>
+	D3D12_STATE_SUBOBJECT createHitGroupSubObject();
+
+	/// <summary>
 	/// Creates and initializes the ray tracing pipeline state used for GPU ray tracing operations.
 	/// </summary>
 	void createRayTracingPipelineState();
@@ -230,21 +244,30 @@ private: //Private Functions
 	void createShaderBindingTable(const QLabel* frame);
 
 	/// <summary>
-	/// Copies the Shader Binding Table (SBT) data for a ray-generation entry into the upload heap.
+	/// Copies shader binding table (SBT) records into the upload heap at the specified offsets.
 	/// </summary>
-	/// <param name="rayGenID">Pointer identifying the ray-generation entry (or its associated SBT data) to copy into the upload heap.</param>
-	void copySBTDataToUploadHeap(void* rayGenID);
+	/// <param name="rayGenOffset">Offset (in bytes) in the upload heap where the ray-generation SBT record should be copied.</param>
+	/// <param name="missOffset">Offset (in bytes) in the upload heap where the miss SBT record should be copied.</param>
+	/// <param name="hitGroupOffset">Offset (in bytes) in the upload heap where the hit-group SBT record should be copied.</param>
+	/// <param name="rayGenID">Pointer to the ray-generation shader record data or identifier to copy to the upload heap.</param>
+	/// <param name="missID">Pointer to the miss shader record data or identifier to copy to the upload heap.</param>
+	/// <param name="hitGroupID">Pointer to the hit-group shader record data or identifier to copy to the upload heap.</param>
+	void copySBTDataToUploadHeap(const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, void* rayGenID, void* missID, void* hitGroupID);
 
 	/// <summary>
-	/// Copies SBT data to the default heap used by the program.
+	/// Copies SBT (Shader Binding Table) data to the default heap.
 	/// </summary>
 	void copySBTDataToDefaultHeap();
 
 	/// <summary>
-	/// Prepares a dispatch rays descriptor using the specified size.
+	/// Prepares a dispatch-rays descriptor using shader-table offsets and record size for a specific frame.
 	/// </summary>
-	/// <param name="size">The size used to configure the dispatch rays descriptor (passed by const reference).</param>
-	void prepareDispatchRaysDesc(const UINT& size, const QLabel* frame);
+	/// <param name="recordSize">Size in bytes of each shader record in the shader table.</param>
+	/// <param name="rayGenOffset">Byte offset into the shader table where the ray-generation records begin.</param>
+	/// <param name="missOffset">Byte offset into the shader table where the miss records begin.</param>
+	/// <param name="hitGroupOffset">Byte offset into the shader table where the hit-group records begin.</param>
+	/// <param name="frame">Pointer to a QLabel that identifies or provides frame-related metadata/context for which the descriptor is prepared.</param>
+	void prepareDispatchRaysDesc(const UINT recordSize, const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, const QLabel* frame);
 
 	/// <summary>
 	/// Prepares DirectX for Ray Tracing
@@ -255,14 +278,43 @@ private: //Private Functions
 	/// Prepares DirectX for Rasterization
 	/// </summary>
 	void prepareForRasterization(const QLabel* frame);
+
+	/// <summary>
+	/// Describes the ray tracing geometry triangles.
+	/// </summary>
+	void describeTriangles();
+	/// <summary>
+	/// Prepares acceleration structures.
+	/// </summary>
+	void prepareAccelerationStructures();
+
+	/// <summary>
+	/// Builds the Bottom Level Acceleration Structure (BLAS) for ray tracing.
+	/// </summary>
+	void buildBLAS();
+
+	/// <summary>
+	/// Builds the Top Level Acceleration Structure (TLAS) for ray tracing.
+	/// </summary>
+	void buildTLAS();
+
+	/// <summary>
+	/// Creates and initializes descriptor objects for ray-tracing acceleration structures used by the renderer.
+	/// </summary>
+	void createDescriptorsForRTAccelerationStructures();
+
+	/// <summary>
+	/// Initializes scene-related variables to their default or starting values.
+	/// </summary>
+	void intializeSceneVariables();
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter
 	ID3D12Device5Ptr device = nullptr; //COM Pointer to the used for rendering device
 
 	ID3D12CommandQueuePtr commandQueue = nullptr; //COM Pointer to the command queue
-	ID3D12CommandAllocatorPtr commandAllocator = nullptr; //COM Pointer to the command allocator
-	ID3D12GraphicsCommandList4Ptr graphicsCommandList = nullptr; //COM Pointer to the command list
+	ID3D12CommandAllocatorPtr commandAllocator = nullptr; //COM Pointer to the frame command allocator
+	ID3D12GraphicsCommandList4Ptr commandList = nullptr; //COM Pointer to the command list
 
 	ID3D12FencePtr frameFence = nullptr; //COM Pointer to the frame fence used to sync CPU and GPU
 	HANDLE frameEventHandle = nullptr; //Handle for the frame fence event
@@ -297,6 +349,7 @@ private:
 	bool triangleDirection; //Direction of movement for the triangle
 
 	std::unique_ptr<OutputTexture> outputTexture; //2D output texture for RT
+
 	ID3D12DescriptorHeapPtr UAVDescHeapHandle; //Descriptor heap handle for Unordered Access View
 
 	ID3D12RootSignaturePtr globalRootSignature; //Global root signature for RT
@@ -309,15 +362,36 @@ private:
 	D3D12_EXPORT_DESC missShaderExportDesc; //Export description for the miss shader
 	D3D12_DXIL_LIBRARY_DESC missShaderLibDesc; //DXIL library description for the miss shader
 
+	ID3DBlobPtr closestHitShaderBlob; //Blob for the closest hit shader
+	D3D12_EXPORT_DESC closestHitShaderExportDesc; //Export description for the closest hit shader
+	D3D12_DXIL_LIBRARY_DESC closestHitShaderLibDesc; //DXIL library description for the closest hit shader
+
+	D3D12_HIT_GROUP_DESC hitGroupDesc = {};//Hit group description
+
 	D3D12_RAYTRACING_SHADER_CONFIG rayTracingShaderConfig; //Ray tracing shader config
 	D3D12_RAYTRACING_PIPELINE_CONFIG rayTracingPipelineConfig; //Ray tracing pipeline config
 	D3D12_GLOBAL_ROOT_SIGNATURE globalRootSignatureDesc; //Global root signature description
 
 	ID3D12StateObjectPtr rtStateObject; //COM Pointer to the ray tracing state object
 
+	ID3D12StateObjectPropertiesPtr rtStateObjectProps; //COM Pointer to the ray tracing state object properties
 	std::unique_ptr <SBTUploadHeap> sbtUploadHeap; //Shader binding table upload heap
 	std::unique_ptr <SBTDefaultHeap> sbtDefaultHeap; //Shader binding table default heap
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = {}; //Dispatch rays descriptor
 
+	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};//Ray tracing geometry description
+	std::unique_ptr<AccelerationStructureData> BLASdestAccelerationStructureData; //BLAS Destination acceleration structure data
+	std::unique_ptr<AccelerationStructureData> BLASscratchAccelerationStructureData; //BLAS Scratch acceleration structure data
+
+	std::unique_ptr<AccelerationStructureData> TLASdestAccelerationStructureData; //TLAS Destination acceleration structure data
+	std::unique_ptr<AccelerationStructureData> TLASscratchAccelerationStructureData; //TLAS Scratch acceleration structure data
+	ID3D12ResourcePtr instanceDescBuffer; //Instance description buffer
+	ID3D12DescriptorHeapPtr accelerationStructureDescHeap; //Descriptor heap for acceleration structures
+
+	ID3D12DescriptorHeapPtr rtDescriptorHeap; //Descriptor heap for ray tracing
+
 	bool isUsingRayTracing = false; //Whether ray tracing is being used or rasterization
+
+private: //Scene variables
+	std::unique_ptr<CameraBufferResource> cameraBuffer; //Camera buffer resource
 };
