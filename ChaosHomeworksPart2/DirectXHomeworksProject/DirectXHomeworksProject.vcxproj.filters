@@ -79,6 +79,9 @@
     <Filter Include="DXResources\CameraBuffer">
       <UniqueIdentifier>{a109fd9c-b587-4c03-9edb-6db13f1a0a70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SnakeApp\Movement">
+      <UniqueIdentifier>{855c9c3d-3432-4423-b2d6-774ba128c1d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -131,6 +134,9 @@
     </ClCompile>
     <ClCompile Include="CameraBufferResource.cpp">
       <Filter>DXResources\CameraBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Movement.cpp">
+      <Filter>SnakeApp\Movement</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -187,6 +193,12 @@
     </ClInclude>
     <ClInclude Include="CameraBufferResource.h">
       <Filter>DXResources\CameraBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementInput.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Movement.h">
+      <Filter>SnakeApp\Movement</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

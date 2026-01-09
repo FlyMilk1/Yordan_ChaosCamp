@@ -24,3 +24,14 @@ CameraBufferResource::CameraBufferResource(ID3D12Device* device)
 	memcpy(pData, &cameraData, sizeof(CameraCB));
 	d3d12Resource->Unmap(0, nullptr);
 }
+
+void CameraBufferResource::moveCamera(const DirectX::XMFLOAT3& deltaPosition)
+{
+    cameraData.cameraPosition.x += deltaPosition.x;
+    cameraData.cameraPosition.y += deltaPosition.y;
+    cameraData.cameraPosition.z += deltaPosition.z;
+    void* pData = nullptr;
+    HRESULT hr = d3d12Resource->Map(0, nullptr, &pData);
+    memcpy(pData, &cameraData, sizeof(CameraCB));
+    d3d12Resource->Unmap(0, nullptr);
+}

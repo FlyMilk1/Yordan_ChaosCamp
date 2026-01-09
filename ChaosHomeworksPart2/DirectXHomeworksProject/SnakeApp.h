@@ -7,6 +7,7 @@
 #include "DXRenderer.h"
 #include "FPSPresets.h"
 #include "FrameData.h"
+#include "Movement.h"
 class SnakeApp : public QObject
 {
 	Q_OBJECT
@@ -45,15 +46,19 @@ private slots:
 	/// Switches the current rendering mode.
 	/// </summary>
 	void switchRenderingMode();
+
 private://Variables
 	UINT frameIndex=0; // Index of current frame
+	UINT fps = 0; //Frames per second
 	MainWindow* mainWindow = nullptr; //Pointer to the Main Window
 	CustomStopwatch secondsPassedFromLastFrame = {}; //Stopwatch that keeps the time from previous frame
 	DXRenderer renderer = {}; //The DirectX Renderer
 	QApplication* app = nullptr; //Pointer to the Qt Application
 	QTimer* idleTimer = nullptr; //Pointer to the idle timer
-	QTimer* fpsTimer = nullptr; //Pointer to the FPS timer
+	QTimer* fpsTimer = nullptr; //Pointer to the FPS timer'
+	QTimer* movementTimer = nullptr; //Pointer to the movement timer
 	FrameData frameData; //Frame data passed to the renderer for shaders
 	bool isUsingRayTracing = true; //Whether ray tracing is used or not
+	std::unique_ptr<Movement> movement; //Pointer to the movement handler
 };
 

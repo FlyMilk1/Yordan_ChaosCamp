@@ -79,9 +79,12 @@ public: //Public Functions
 	void cleanUp();
 
 	/// <summary>
-	/// Checks whether ray tracing is supported on the current system or environment.
+	/// Updates the camera buffer by applying the specified positional deltas.
 	/// </summary>
-	void checkRayTracingSupport();
+	/// <param name="deltaX">The offset to apply along the X axis (horizontal).</param>
+	/// <param name="deltaY">The offset to apply along the Y axis (vertical).</param>
+	/// <param name="deltaZ">The offset to apply along the Z axis (depth).</param>
+	void updateCameraBuffer(const float& deltaX, const float& deltaY, const float& deltaZ);
 
 private: //Private Functions
 	/// <summary>
@@ -307,6 +310,11 @@ private: //Private Functions
 	/// Initializes scene-related variables to their default or starting values.
 	/// </summary>
 	void intializeSceneVariables();
+
+	/// <summary>
+	/// Checks whether ray tracing is supported on the current system or environment.
+	/// </summary>
+	void checkRayTracingSupport();
 private:
 	IDXGIFactory4Ptr dxgiFactory = nullptr; //COM Pointer to the DXGI Factory
 	IDXGIAdapter1Ptr adapter = nullptr; //COM Pointer to the used for rendering adapter

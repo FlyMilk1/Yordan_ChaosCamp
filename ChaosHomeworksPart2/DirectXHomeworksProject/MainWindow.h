@@ -2,6 +2,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QObject>
 #include "ui_MainWindow.h"
+#include "MovementInput.h"
 class MainWindow  : public QMainWindow
 {
 	Q_OBJECT
@@ -47,15 +48,30 @@ public://Public functions
 	/// Called when the rendering mode changes to perform any necessary updates.
 	/// </summary>
 	void onRenderingModeChanged();
+
+	/// <summary>
+	/// Handles a movement input event.
+	/// </summary>
+	/// <param name="input">Read-only movement input data to process.</param>
+	void onMoveInput(const MovementInput& input);
+
+	/// <summary>
+	/// Performs checks on move-related input, handling validation or processing as needed.
+	/// </summary>
+	void checkMoveInput();
 signals:
 	void viewportDrag(const QPoint& deltaFromStart,
 		const QPoint& deltaFromLast);
     void switchRenderingModeSignal();
+	void moveSignal(const MovementInput& input);
+
 private:
 	bool dragging = false;
 	QPoint startPos;
 	QPoint lastPos;
 	QPoint deltaFromStart;
 	QPoint deltaFromLast;
+	QSet<int> pressedKeys;
+
 };
 

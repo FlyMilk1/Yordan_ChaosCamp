@@ -171,6 +171,7 @@
     <ClCompile Include="DXRenderer.cpp" />
     <ClCompile Include="DXResource.cpp" />
     <ClCompile Include="GPUDefaultHeap.cpp" />
+    <ClCompile Include="Movement.cpp" />
     <ClCompile Include="OutputTexture.cpp" />
     <ClCompile Include="SBTDefaultHeap.cpp" />
     <ClCompile Include="SBTUploadHeap.cpp" />
@@ -193,6 +194,8 @@
     <ClInclude Include="FrameData.h" />
     <ClInclude Include="GPUDefaultHeap.h" />
     <ClInclude Include="GPUReadbackHeapResource.h" />
+    <ClInclude Include="Movement.h" />
+    <ClInclude Include="MovementInput.h" />
     <ClInclude Include="OutputTexture.h" />
     <ClInclude Include="RTVResource.h" />
     <ClInclude Include="SBTDefaultHeap.h" />

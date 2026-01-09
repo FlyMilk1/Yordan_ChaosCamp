@@ -81,10 +81,30 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
             return true;
 		}
     }
-    
+    //Movement
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* e = static_cast<QKeyEvent*>(event);
+        pressedKeys.insert(e->key());
+    }
+
+    if (event->type() == QEvent::KeyRelease) {
+        QKeyEvent* e = static_cast<QKeyEvent*>(event);
+        pressedKeys.remove(e->key());
+    }
+
     return QMainWindow::eventFilter(obj, event);
 }
-
+void MainWindow::checkMoveInput()
+{
+    MovementInput input;
+    input.moveForward = pressedKeys.contains(Qt::Key_W);
+    input.moveBackward = pressedKeys.contains(Qt::Key_S);
+    input.moveLeft = pressedKeys.contains(Qt::Key_A);
+    input.moveRight = pressedKeys.contains(Qt::Key_D);
+    input.moveUp = pressedKeys.contains(Qt::Key_E);
+    input.moveDown = pressedKeys.contains(Qt::Key_Q);
+	onMoveInput(input);
+}
 void MainWindow::onViewportDrag(const QPoint& deltaFromStart, const QPoint& deltaFromLast)
 {
     emit viewportDrag(deltaFromStart, deltaFromLast);
@@ -93,4 +113,9 @@ void MainWindow::onViewportDrag(const QPoint& deltaFromStart, const QPoint& delt
 void MainWindow::onRenderingModeChanged()
 {
 	emit switchRenderingModeSignal();
+}
+
+void MainWindow::onMoveInput(const MovementInput& input)
+{
+    emit moveSignal(input);
 }

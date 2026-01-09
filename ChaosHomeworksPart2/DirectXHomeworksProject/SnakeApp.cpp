@@ -45,11 +45,22 @@ bool SnakeApp::init()
 	fpsTimer = new QTimer(mainWindow);
 	QObject::connect(fpsTimer, &QTimer::timeout, this, &SnakeApp::updateRenderStats);
 	fpsTimer->start(1'000);
+	
+	movementTimer = new QTimer(mainWindow);
+	QObject::connect(movementTimer, &QTimer::timeout, [this]() {
+		this->mainWindow->checkMoveInput();
+		});
+	movementTimer->start(FPS_144);
 
 	QObject::connect(mainWindow, &MainWindow::viewportDrag, this, &SnakeApp::onCameraPan);
 
 	QObject::connect(mainWindow, &MainWindow::switchRenderingModeSignal, this, &SnakeApp::switchRenderingMode);
 
+	movement = std::make_unique<Movement>(&renderer);
+
+	QObject::connect(mainWindow, &MainWindow::moveSignal, [this](const MovementInput& input) {
+		this->movement->updatePosition(input);
+		});
 	return true;
 }
 

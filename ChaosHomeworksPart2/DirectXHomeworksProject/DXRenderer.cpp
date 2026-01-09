@@ -971,6 +971,11 @@ void DXRenderer::intializeSceneVariables()
 	cameraBuffer = std::make_unique<CameraBufferResource>(device);
 }
 
+void DXRenderer::updateCameraBuffer(const float& deltaX, const float& deltaY, const float& deltaZ)
+{
+	cameraBuffer->moveCamera({deltaX, deltaY, deltaZ});
+}
+
 void DXRenderer::getFrameColor(int i, float out[3]) {
 	// Use sine waves to smoothly cycle R, G, B over frames
 	float speed = 0.02f; // smaller = slower cycling
