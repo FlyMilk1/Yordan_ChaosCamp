@@ -167,6 +167,7 @@
   <ItemGroup>
     <ClCompile Include="AccelerationStructureData.cpp" />
     <ClCompile Include="CameraBufferResource.cpp" />
+    <ClCompile Include="CameraSceneObject.cpp" />
     <ClCompile Include="CustomStopwatch.cpp" />
     <ClCompile Include="DXRenderer.cpp" />
     <ClCompile Include="DXResource.cpp" />
@@ -175,6 +176,7 @@
     <ClCompile Include="OutputTexture.cpp" />
     <ClCompile Include="SBTDefaultHeap.cpp" />
     <ClCompile Include="SBTUploadHeap.cpp" />
+    <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="ShaderCompiler.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="SnakeApp.cpp" />
@@ -188,6 +190,7 @@
     <ClInclude Include="AccelerationStructureData.h" />
     <ClInclude Include="CameraBuffer.h" />
     <ClInclude Include="CameraBufferResource.h" />
+    <ClInclude Include="CameraSceneObject.h" />
     <ClInclude Include="CustomStopwatch.h" />
     <ClInclude Include="DXRenderer.h" />
     <ClInclude Include="DXResource.h" />
@@ -200,6 +203,7 @@
     <ClInclude Include="RTVResource.h" />
     <ClInclude Include="SBTDefaultHeap.h" />
     <ClInclude Include="SBTUploadHeap.h" />
+    <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Vertex.h" />

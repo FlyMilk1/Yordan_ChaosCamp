@@ -1,10 +1,11 @@
 #pragma once
 #include "DXRenderer.h"
 #include "MovementInput.h"
+#include "SceneObject.h"
 class Movement
 {
 public://public functions
-	Movement(DXRenderer* dxRenderer);
+	Movement(DXRenderer* dxRenderer, SceneObject* sceneObject);
 	virtual ~Movement() = default;
 
 	/// <summary>
@@ -15,5 +16,7 @@ public://public functions
 private://private variables
 	std::unique_ptr<DXRenderer> renderer;//Pointer to DirectX renderer
 	float speed = 0.05f;//Movement speed
+	SceneObject sceneObject;
+	std::unique_ptr<SceneObject> object;//Pointer to the scene object
 };
 

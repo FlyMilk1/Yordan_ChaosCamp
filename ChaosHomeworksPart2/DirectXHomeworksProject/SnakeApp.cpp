@@ -13,6 +13,11 @@ void SnakeApp::onCameraPan(const QPoint& deltaFromStart,
 {
 	frameData.offsetX += deltaFromLast.x() * 0.002;
 	frameData.offsetY += -deltaFromLast.y() * 0.002;
+	DirectX::XMFLOAT3 camRot = camera->getRotation();
+	camRot.y += deltaFromLast.x() * 0.002f;
+	camRot.z += -deltaFromLast.y() * 0.002f;
+	camera->setRotation(camRot);
+	renderer.updateCameraBuffer(camera->getCameraBuffer());
 }
 
 void SnakeApp::switchRenderingMode()
@@ -56,7 +61,8 @@ bool SnakeApp::init()
 
 	QObject::connect(mainWindow, &MainWindow::switchRenderingModeSignal, this, &SnakeApp::switchRenderingMode);
 
-	movement = std::make_unique<Movement>(&renderer);
+	camera = std::make_unique<CameraSceneObject>();
+	movement = std::make_unique<Movement>(&renderer, camera.get());
 
 	QObject::connect(mainWindow, &MainWindow::moveSignal, [this](const MovementInput& input) {
 		this->movement->updatePosition(input);

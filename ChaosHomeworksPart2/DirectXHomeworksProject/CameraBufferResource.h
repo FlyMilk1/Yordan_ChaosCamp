@@ -9,10 +9,11 @@ public:
     virtual ~CameraBufferResource() = default;
 
     /// <summary>
-    /// Moves the camera by the specified offset.
+	/// Updates the camera constant buffer data
     /// </summary>
-    /// <param name="deltaPosition">Offset to apply to the camera's position as a DirectX::XMFLOAT3 (x, y, z). This vector is added to the current camera position.</param>
-    void moveCamera(const DirectX::XMFLOAT3& deltaPosition);
+    /// <param name="cameraCB">Camera constant buffer data</param>
+    void updateCameraCB(const CameraCB cameraCB);
+
     
 private:
 	CameraCB cameraData = {};

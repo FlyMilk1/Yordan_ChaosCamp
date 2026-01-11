@@ -971,9 +971,9 @@ void DXRenderer::intializeSceneVariables()
 	cameraBuffer = std::make_unique<CameraBufferResource>(device);
 }
 
-void DXRenderer::updateCameraBuffer(const float& deltaX, const float& deltaY, const float& deltaZ)
+void DXRenderer::updateCameraBuffer(const CameraCB& cameraBuffer)
 {
-	cameraBuffer->moveCamera({deltaX, deltaY, deltaZ});
+	this->cameraBuffer->updateCameraCB(cameraBuffer);
 }
 
 void DXRenderer::getFrameColor(int i, float out[3]) {

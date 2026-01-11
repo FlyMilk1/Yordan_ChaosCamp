@@ -79,12 +79,10 @@ public: //Public Functions
 	void cleanUp();
 
 	/// <summary>
-	/// Updates the camera buffer by applying the specified positional deltas.
+	/// Updates the camera constant buffer data
 	/// </summary>
-	/// <param name="deltaX">The offset to apply along the X axis (horizontal).</param>
-	/// <param name="deltaY">The offset to apply along the Y axis (vertical).</param>
-	/// <param name="deltaZ">The offset to apply along the Z axis (depth).</param>
-	void updateCameraBuffer(const float& deltaX, const float& deltaY, const float& deltaZ);
+	/// <param name="cameraBuffer">Camera constant buffer data</param>
+	void updateCameraBuffer(const CameraCB& cameraBuffer);
 
 private: //Private Functions
 	/// <summary>

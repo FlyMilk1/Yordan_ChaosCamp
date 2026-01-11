@@ -1,8 +1,9 @@
 #include "Movement.h"
-
-Movement::Movement(DXRenderer* dxRenderer)
+#include "CameraSceneObject.h"
+Movement::Movement(DXRenderer* dxRenderer, SceneObject* sceneObject)
 {
 	renderer = std::unique_ptr<DXRenderer>(dxRenderer);
+	object = std::unique_ptr<SceneObject>(sceneObject);
 }
 
 void Movement::updatePosition(const MovementInput& input)
@@ -21,6 +22,11 @@ void Movement::updatePosition(const MovementInput& input)
 	if (input.moveDown)
 		y -= speed;
 
+	object->setPosition(DirectX::XMFLOAT3(
+		object->getPosition().x + x,
+		object->getPosition().y + y,
+		object->getPosition().z + z
+	));
 	// Update the camera buffer with the new position deltas
-	renderer->updateCameraBuffer(x, y, z);
+	renderer->updateCameraBuffer(static_cast<CameraSceneObject*>(object.get())->getCameraBuffer());
 }

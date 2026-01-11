@@ -3,7 +3,9 @@ RWTexture2D<float4> frameTexture : register (u0);
 cbuffer CameraCB : register(b0)
 {
     float3 cameraPosition;
-    float3 cameraRotation;
+    float3 cameraForward;
+    float3 cameraUp;
+    float3 cameraRight;
     float _padding;
 };
 
@@ -40,6 +42,7 @@ void rayGen()
     x *= (width / height);
     
     float3 rayDirection = normalize(float3(x, y, 1.f));
+    rayDirection = normalize(rayDirection.x * cameraRight + rayDirection.y * cameraUp + rayDirection.z * cameraForward);
     cameraRay.Direction = rayDirection;
     cameraRay.TMin = 0.001f;
     cameraRay.TMax = 10000.f;

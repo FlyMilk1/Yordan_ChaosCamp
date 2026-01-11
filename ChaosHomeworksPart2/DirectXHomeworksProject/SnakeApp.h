@@ -8,6 +8,7 @@
 #include "FPSPresets.h"
 #include "FrameData.h"
 #include "Movement.h"
+#include "CameraSceneObject.h"
 class SnakeApp : public QObject
 {
 	Q_OBJECT
@@ -60,5 +61,6 @@ private://Variables
 	FrameData frameData; //Frame data passed to the renderer for shaders
 	bool isUsingRayTracing = true; //Whether ray tracing is used or not
 	std::unique_ptr<Movement> movement; //Pointer to the movement handler
+	std::unique_ptr<CameraSceneObject> camera; //Pointer to the camera object
 };
 

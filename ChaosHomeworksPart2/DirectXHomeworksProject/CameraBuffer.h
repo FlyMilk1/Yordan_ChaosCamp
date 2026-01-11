@@ -3,6 +3,7 @@
 struct CameraCB
 {
     DirectX::XMFLOAT3 cameraPosition;
-    DirectX::XMFLOAT3 cameraRotation;
-    float padding;
+    DirectX::XMVECTOR cameraForward;
+	DirectX::XMVECTOR cameraUp;
+	DirectX::XMVECTOR cameraRight;
 };

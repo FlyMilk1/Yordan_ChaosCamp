@@ -82,6 +82,15 @@
     <Filter Include="SnakeApp\Movement">
       <UniqueIdentifier>{855c9c3d-3432-4423-b2d6-774ba128c1d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SnakeApp\Objects">
+      <UniqueIdentifier>{b6ad6dae-c64b-4cc6-aa8f-3bdf7f2499de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SnakeApp\Objects\SceneObject">
+      <UniqueIdentifier>{43b59366-fef7-428b-9e1d-26499744730c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SnakeApp\Objects\CameraSceneObject">
+      <UniqueIdentifier>{c8cfd1d6-f118-4f7e-973f-15cc27b93048}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -137,6 +146,12 @@
     </ClCompile>
     <ClCompile Include="Movement.cpp">
       <Filter>SnakeApp\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneObject.cpp">
+      <Filter>SnakeApp\Objects\SceneObject</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraSceneObject.cpp">
+      <Filter>SnakeApp\Objects\CameraSceneObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -199,6 +214,12 @@
     </ClInclude>
     <ClInclude Include="Movement.h">
       <Filter>SnakeApp\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneObject.h">
+      <Filter>SnakeApp\Objects\SceneObject</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraSceneObject.h">
+      <Filter>SnakeApp\Objects\CameraSceneObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
