@@ -6,8 +6,8 @@ cbuffer CameraCB : register(b0)
     float3 cameraForward;
     float3 cameraUp;
     float3 cameraRight;
-    float _padding;
 };
+
 
 
 struct RayPayload
@@ -72,5 +72,20 @@ void miss(inout RayPayload payload)
 [shader("closesthit")]
 void closestHit(inout RayPayload rayPayload, in BuiltInTriangleIntersectionAttributes att)
 {
-    rayPayload.color = float4(1.0, 0.0, 0.0, 1.0);
+    const float4 pallete[10] = {
+        float4(1.0, 0.0, 0.0, 1.0),
+        float4(0.0, 1.0, 0.0, 1.0),
+        float4(0.0, 0.0, 1.0, 1.0),
+        float4(1.0, 1.0, 0.0, 1.0),
+        float4(1.0, 0.0, 1.0, 1.0),
+        float4(1.0, 0.0, 1.0, 1.0),
+        float4(1.0, 1.0, 1.0, 1.0),
+        float4(0.5, 0.5, 0.5, 1.0),
+        float4(1.0, 0.5, 0.0, 1.0),
+        float4(0.5, 0.0, 1.0, 1.0)
+    };
+    
+    uint primitiveIndex = PrimitiveIndex();
+    rayPayload.color = pallete[primitiveIndex % 10];
+    
 }

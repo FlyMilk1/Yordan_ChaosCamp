@@ -1,5 +1,6 @@
 #include "DXRenderer.h"
 #include "ShaderCompiler.h"
+#include "SceneObject.h"
 DXRenderer::DXRenderer()
 {
 #ifdef _DEBUG
@@ -21,9 +22,7 @@ DXRenderer::DXRenderer()
 
 QImage DXRenderer::renderFrame(const FrameData& frameData, const bool& writeToFile)
 {
-	float frameColor[3];
-	getFrameColor(frameIdx, frameColor);
-	frameBegin(frameColor);
+	frameBegin();
 
 	if (isUsingRayTracing) {
 		ID3D12DescriptorHeap* descriptorHeaps[] = { rtDescriptorHeap };
@@ -81,7 +80,6 @@ void DXRenderer::prepareForRendering(const QLabel* frame, const bool& useRayTrac
 	}
 	
 	isUsingRayTracing = useRayTracing;
-	createTriangles();
 	createVertexBuffer();
 	if (useRayTracing) {
 		prepareForRayTracing(frame);
@@ -89,6 +87,14 @@ void DXRenderer::prepareForRendering(const QLabel* frame, const bool& useRayTrac
 	else {
 		prepareForRasterization(frame);
 	}
+}
+
+void DXRenderer::setBackgroundColor(const float& r, const float& g, const float& b, const float& a)
+{
+	clearColor[0] = r;
+	clearColor[1] = g;
+	clearColor[2] = b;
+	clearColor[3] = a;
 }
 
 void DXRenderer::createDevice()
@@ -258,7 +264,7 @@ void DXRenderer::createSwapChain(const QLabel* frame)
 	
 }
 
-void DXRenderer::frameBegin(const FLOAT* RGBAcolor)
+void DXRenderer::frameBegin()
 {
 	waitForGPURenderFrame();
 	HRESULT hr = commandAllocator->Reset();
@@ -283,7 +289,7 @@ void DXRenderer::frameBegin(const FLOAT* RGBAcolor)
 	D3D12_CPU_DESCRIPTOR_HANDLE currentRTV = CPUDescriptorHandle;
 	currentRTV.ptr += currentSwapChainBackBufferIndex * rtvDescriptorSize;
 	commandList->OMSetRenderTargets(1, &currentRTV, FALSE, nullptr);
-	commandList->ClearRenderTargetView(currentRTV, RGBAcolor, 0, NULL);
+	commandList->ClearRenderTargetView(currentRTV, clearColor, 0, NULL);
 }
 
 void DXRenderer::frameEnd()
@@ -422,19 +428,54 @@ void DXRenderer::createViewport(const QLabel* frame)
 	scissorRect.bottom = frame->height();
 }
 
-void DXRenderer::createTriangles()
+void DXRenderer::updateSceneVerticesVB(const Scene* scene)
 {
-	//vertexBuffer->addVerticesToBuffer(Shape::createCheckerPattern({ -1.0f,-1.0f }, { 1.0f,1.0f }, 8));
-	vertexBuffer->addVerticesToBuffer({
-		{0.0, 0.5, 0.0},
-		{0.5, -0.5, 0.0},
-		{-0.5, -0.5, 0.0}
-		});
+	vertexBuffer->addVerticesToBuffer(Scene::getMeshVertices(scene->getSceneObjectsByType(ObjectType::GEOMETRY)));
 	vertexBuffer->updateTriangles();
+
+	waitForGPURenderFrame();
+	gpuDefaultHeap = std::make_unique<GPUDefaultHeap>(device, vertexBuffer->getVerticesCount());
+	HRESULT hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+
+	hr = commandList->Reset(commandAllocator, nullptr);
+	assert(SUCCEEDED(hr));
+
+	commandList->CopyBufferRegion(gpuDefaultHeap->getD3D12Resource(),
+		0,
+		vertexBuffer->getD3D12Resource(),
+		0,
+		vertexBuffer->getVerticesCount() * sizeof(Vertex));
+	D3D12_RESOURCE_BARRIER vbBarrier{};
+	vbBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	vbBarrier.Transition.pResource = gpuDefaultHeap->getD3D12Resource();
+	vbBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	vbBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+	vbBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	commandList->ResourceBarrier(1, &vbBarrier);
+
+	hr = commandList->Close();
+	assert(SUCCEEDED(hr));
+
+	ID3D12CommandList* ppCommandLists[] = { commandList };
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	++renderFrameFenceValue;
+	commandQueue->Signal(frameFence, renderFrameFenceValue);
+
+	waitForGPURenderFrame();
+
+	prepareAccelerationStructures();
 }
 
 void DXRenderer::createVertexBuffer()
 {
+	vertexBuffer->addVerticesToBuffer({
+	{0.0, 0.5, 0.0},
+	{0.5, -0.5, 0.0},
+	{-0.5, -0.5, 0.0}
+		});
+	vertexBuffer->updateTriangles();
 	gpuDefaultHeap = std::make_unique<GPUDefaultHeap>(device, vertexBuffer->getVerticesCount());
 	HRESULT hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));

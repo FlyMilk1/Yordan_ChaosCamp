@@ -127,7 +127,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DXC_SUPPORT_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir);$(SolutionDir)\include\DXCompiler\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir);$(SolutionDir)\include\DXCompiler\include;$(SolutionDir)\include\rapidjson</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -150,7 +150,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);DXC_SUPPORT_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir);$(SolutionDir)\include\DXCompiler\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include\directx;$(IntDir);$(SolutionDir)\include\DXCompiler\include;$(SolutionDir)\include\rapidjson</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -171,11 +171,14 @@
     <ClCompile Include="CustomStopwatch.cpp" />
     <ClCompile Include="DXRenderer.cpp" />
     <ClCompile Include="DXResource.cpp" />
+    <ClCompile Include="GeometrySceneObject.cpp" />
     <ClCompile Include="GPUDefaultHeap.cpp" />
     <ClCompile Include="Movement.cpp" />
     <ClCompile Include="OutputTexture.cpp" />
     <ClCompile Include="SBTDefaultHeap.cpp" />
     <ClCompile Include="SBTUploadHeap.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="ShaderCompiler.cpp" />
     <ClCompile Include="Shape.cpp" />
@@ -195,6 +198,7 @@
     <ClInclude Include="DXRenderer.h" />
     <ClInclude Include="DXResource.h" />
     <ClInclude Include="FrameData.h" />
+    <ClInclude Include="GeometrySceneObject.h" />
     <ClInclude Include="GPUDefaultHeap.h" />
     <ClInclude Include="GPUReadbackHeapResource.h" />
     <ClInclude Include="Movement.h" />
@@ -203,6 +207,8 @@
     <ClInclude Include="RTVResource.h" />
     <ClInclude Include="SBTDefaultHeap.h" />
     <ClInclude Include="SBTUploadHeap.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="Shape.h" />

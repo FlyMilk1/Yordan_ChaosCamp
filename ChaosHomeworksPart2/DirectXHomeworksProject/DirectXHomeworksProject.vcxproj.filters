@@ -91,6 +91,18 @@
     <Filter Include="SnakeApp\Objects\CameraSceneObject">
       <UniqueIdentifier>{c8cfd1d6-f118-4f7e-973f-15cc27b93048}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SnakeApp\SceneClasses">
+      <UniqueIdentifier>{bf0c40e4-da4f-4504-8e09-95c043bbccf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SnakeApp\SceneClasses\Scene">
+      <UniqueIdentifier>{e26dd00a-f39f-4f77-bb55-c85706de2386}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SnakeApp\SceneClasses\SceneLoader">
+      <UniqueIdentifier>{b19af5f0-43f3-4a9b-a399-0889da2fd3b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SnakeApp\Objects\GeometrySceneObject">
+      <UniqueIdentifier>{a91a2686-d320-4fe8-9db5-471e2e9147eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -152,6 +164,15 @@
     </ClCompile>
     <ClCompile Include="CameraSceneObject.cpp">
       <Filter>SnakeApp\Objects\CameraSceneObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>SnakeApp\SceneClasses\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLoader.cpp">
+      <Filter>SnakeApp\SceneClasses\SceneLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometrySceneObject.cpp">
+      <Filter>SnakeApp\Objects\GeometrySceneObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -220,6 +241,15 @@
     </ClInclude>
     <ClInclude Include="CameraSceneObject.h">
       <Filter>SnakeApp\Objects\CameraSceneObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>SnakeApp\SceneClasses\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneLoader.h">
+      <Filter>SnakeApp\SceneClasses\SceneLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometrySceneObject.h">
+      <Filter>SnakeApp\Objects\GeometrySceneObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

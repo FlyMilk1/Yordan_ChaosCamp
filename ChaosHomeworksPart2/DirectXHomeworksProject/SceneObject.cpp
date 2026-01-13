@@ -1,6 +1,6 @@
 #include "SceneObject.h"
 
-SceneObject::SceneObject(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& rotation) : position(position), rotation(rotation) {}
+SceneObject::SceneObject(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& rotation, const std::string& name) : position(position), rotation(rotation), name(name) {}
 
 void SceneObject::setPosition(const DirectX::XMFLOAT3& position)
 {

@@ -1,4 +1,5 @@
 #include "SnakeApp.h"
+#include "SceneLoader.h"
 SnakeApp::SnakeApp() {}
 
 void SnakeApp::onIdleTick() { 
@@ -67,6 +68,12 @@ bool SnakeApp::init()
 	QObject::connect(mainWindow, &MainWindow::moveSignal, [this](const MovementInput& input) {
 		this->movement->updatePosition(input);
 		});
+	
+	scene = std::make_unique<Scene>();
+	SceneLoader::loadScene("scene5.crtscene", scene.get());
+	renderer.updateSceneVerticesVB(scene.get());
+	DirectX::XMFLOAT3 bgColor = scene->getBackgroundColor();
+	renderer.setBackgroundColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
 	return true;
 }
 

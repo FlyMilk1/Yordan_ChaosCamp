@@ -30,6 +30,7 @@ void CameraBufferResource::updateCameraCB(const CameraCB cameraCB)
 	cameraData = cameraCB;
     void* pData = nullptr;
     HRESULT hr = d3d12Resource->Map(0, nullptr, &pData);
+	assert(SUCCEEDED(hr));
     memcpy(pData, &cameraData, sizeof(CameraCB));
     d3d12Resource->Unmap(0, nullptr);
 }

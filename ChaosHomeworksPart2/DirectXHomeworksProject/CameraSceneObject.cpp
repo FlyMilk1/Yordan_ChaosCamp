@@ -1,5 +1,11 @@
 #include "CameraSceneObject.h"
-
+CameraSceneObject::CameraSceneObject(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& rotation, const std::string& name)
+{
+	this->position = position;
+	this->rotation = rotation;
+	this->type = CAMERA;
+	this->name = name;
+}
 const CameraCB& CameraSceneObject::getCameraBuffer()
 {
 	calculateCameraRotationVectors();

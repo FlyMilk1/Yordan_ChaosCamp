@@ -22,10 +22,11 @@ void Movement::updatePosition(const MovementInput& input)
 	if (input.moveDown)
 		y -= speed;
 
+	float CCWyaw = -object->getRotation().y;//Convert to counter-clockwise for correct movement direction
 	object->setPosition(DirectX::XMFLOAT3(
-		object->getPosition().x + x,
+		object->getPosition().x + (x * cos(CCWyaw) - z * sin(CCWyaw)),
 		object->getPosition().y + y,
-		object->getPosition().z + z
+		object->getPosition().z + (x * sin(CCWyaw) + z * cos(CCWyaw))
 	));
 	// Update the camera buffer with the new position deltas
 	renderer->updateCameraBuffer(static_cast<CameraSceneObject*>(object.get())->getCameraBuffer());

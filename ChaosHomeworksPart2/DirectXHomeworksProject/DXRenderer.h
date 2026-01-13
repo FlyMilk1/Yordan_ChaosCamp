@@ -25,6 +25,7 @@
 #include "SBTDefaultHeap.h"
 #include "AccelerationStructureData.h"
 #include <CameraBufferResource.h>
+#include "Scene.h"
 
 #include "CompiledShaders/ConstColor.hlsl.h"
 #include "CompiledShaders/ConstColorVS.hlsl.h"
@@ -84,6 +85,20 @@ public: //Public Functions
 	/// <param name="cameraBuffer">Camera constant buffer data</param>
 	void updateCameraBuffer(const CameraCB& cameraBuffer);
 
+	/// <summary>
+	/// Updates the vertex buffer with the scene's vertices
+	/// </summary>
+	void updateSceneVerticesVB(const Scene* scene);
+
+	/// <summary>
+	/// Sets the background color of the renderer
+	/// </summary>
+	/// <param name="r">red component</param>
+	/// <param name="g">green component</param>
+	/// <param name="b">blue component</param>
+	/// <param name="a">alpha component</param>
+	void setBackgroundColor(const float& r, const float& g, const float& b, const float& a);
+
 private: //Private Functions
 	/// <summary>
 	/// Create ID3D12Device, an interface for accessing the GPU for use with Direct3D API
@@ -138,10 +153,8 @@ private: //Private Functions
 
 	/// <summary>
 	/// Executed in the beggining of renderFrame(). Resets the command allocator and lists, Sets SC buffer Present -> RT.
-	/// Clears render target view with RGBA color
 	/// </summary>
-	/// <param name="RGBAcolor">Clear color</param>
-	void frameBegin(const FLOAT* RGBAcolor);
+	void frameBegin();
 
 	/// <summary>
 	/// Executed in the end of renderFrame(). Sets buffer to RT -> Present. Closes the command list, executes the commands.
@@ -170,11 +183,6 @@ private: //Private Functions
 	/// </summary>
 	/// <param name="frame">Qt output frame</param>
 	void createViewport(const QLabel* frame);
-
-	/// <summary>
-	/// Executes beforex creating the vertex buffer.
-	/// </summary>
-	void createTriangles();
 
 	/// <summary>
 	/// Creates the vertex buffer and the upload and default heap
@@ -400,4 +408,5 @@ private:
 
 private: //Scene variables
 	std::unique_ptr<CameraBufferResource> cameraBuffer; //Camera buffer resource
+	FLOAT clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f }; //Clear color for the render target
 };

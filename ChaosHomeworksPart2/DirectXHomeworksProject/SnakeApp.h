@@ -1,5 +1,6 @@
 //Made by Yordan Yonchev for Chaos Raytracing Course 2025
 #pragma once
+#define NOMINMAX
 #include <QtWidgets/QApplication>
 #include <QTimer>
 #include "MainWindow.h"
@@ -9,6 +10,7 @@
 #include "FrameData.h"
 #include "Movement.h"
 #include "CameraSceneObject.h"
+#include "Scene.h"
 class SnakeApp : public QObject
 {
 	Q_OBJECT
@@ -62,5 +64,7 @@ private://Variables
 	bool isUsingRayTracing = true; //Whether ray tracing is used or not
 	std::unique_ptr<Movement> movement; //Pointer to the movement handler
 	std::unique_ptr<CameraSceneObject> camera; //Pointer to the camera object
+	std::unique_ptr<Scene> scene; //Pointer to the scene
+
 };
 
