@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui.frameLabel->installEventFilter(this);
     ui.frameLabel->setCursor(Qt::OpenHandCursor);
     ui.frameLabel->setFocusPolicy(Qt::StrongFocus);
-    ui.pushButton->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
+    ui.pushButton->setIcon(style()->standardIcon(QStyle::SP_ArrowUp));
 
 
 

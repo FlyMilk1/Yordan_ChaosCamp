@@ -1,5 +1,7 @@
 #include "SnakeApp.h"
 #include "SceneLoader.h"
+#include <filesystem>
+#include <iostream>
 SnakeApp::SnakeApp() {}
 
 void SnakeApp::onIdleTick() { 
@@ -33,6 +35,7 @@ void SnakeApp::switchRenderingMode()
 
 void SnakeApp::initScene(const std::string sceneName)
 {
+	if(!sceneName.length() > 0 || !sceneName.ends_with(".crtscene") || !std::filesystem::exists(sceneName)) return;
 	scene = std::make_unique<Scene>();
 	scene->addSceneObjects({ camera.get() });
 	SceneLoader::loadScene(sceneName, scene.get());
