@@ -140,7 +140,8 @@ void MainWindow::onViewportDrag(const QPoint& deltaFromStart, const QPoint& delt
 
 void MainWindow::onRenderingModeChanged()
 {
-    emit switchRenderingModeSignal();
+    //Disabled because its obsolete and can cause crashes
+    //emit switchRenderingModeSignal();
 }
 
 void MainWindow::onMoveInput(const MovementInput& input)
