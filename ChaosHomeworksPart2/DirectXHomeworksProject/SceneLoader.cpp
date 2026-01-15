@@ -13,16 +13,7 @@ bool SceneLoader::loadScene(const std::string& filePath, Scene* scene)
         assert(!bgColorVal.IsNull() && bgColorVal.IsArray());
         scene->setBackgroundColor(loadFloat3(bgColorVal.GetArray()));
     }
-    //Camera
-    //const rapidjson::Value& cameraVal = doc.FindMember("camera")->value;
-    //if (!cameraVal.IsNull() && cameraVal.IsObject()) {
-    //    const rapidjson::Value& matrixVal = cameraVal.FindMember("matrix")->value;
-    //    assert(!matrixVal.IsNull() && matrixVal.IsArray());
-    //    const rapidjson::Value& positionVal = cameraVal.FindMember("position")->value;
-    //    assert(!positionVal.IsNull() && positionVal.IsArray());
-    //    camera.setRotMatrix(loadMatrix(matrixVal.GetArray()));
-    //    camera.setPos(loadVector(positionVal.GetArray()));
-    //}
+   
     //Textures
     /*const rapidjson::Value& texturesVal = doc.FindMember("textures")->value;
     if (!texturesVal.IsNull() && texturesVal.IsArray()) {
@@ -123,26 +114,34 @@ bool SceneLoader::loadScene(const std::string& filePath, Scene* scene)
         }
 		scene->addSceneObjects(geometryObjects);
     }
-
+    //Camera
+    const rapidjson::Value& cameraVal = doc.FindMember("camera")->value;
+    if (!cameraVal.IsNull() && cameraVal.IsObject()) {
+        const rapidjson::Value& matrixVal = cameraVal.FindMember("matrix")->value;
+        assert(!matrixVal.IsNull() && matrixVal.IsArray());
+        const rapidjson::Value& positionVal = cameraVal.FindMember("position")->value;
+        assert(!positionVal.IsNull() && positionVal.IsArray());
+	    CameraSceneObject* camera = scene->getMainCamera();
+	    //camera->setRotation(loadFloat3(matrixVal.GetArray()));
+        //camera->setPosition(loadFloat3(positionVal.GetArray()));
+    }
     //Lights
-    //const rapidjson::Value& lightsVal = doc.FindMember("lights")->value;
-    //if (!lightsVal.IsNull() && lightsVal.IsArray()) {
-    //    for (int lightId = 0; lightId < lightsVal.Size(); ++lightId) {
-    //        const rapidjson::Value& light = lightsVal[lightId];
-    //        const rapidjson::Value& intensityVal = light.FindMember("intensity")->value;
-    //        const rapidjson::Value& lightPosVal = light.FindMember("position")->value;
-    //        const rapidjson::Value& lightOriginVal = light.FindMember("origin")->value;
-    //        assert(!lightPosVal.IsNull() && lightPosVal.IsArray());
-    //        vec3 lightPos = loadVector(lightPosVal.GetArray());
-    //        vec3 origin = { 0,0,0 };
-    //        if (lightOriginVal.IsArray()) {
-    //            origin = loadVector(lightOriginVal.GetArray());
-    //        }
-    //        float intensity = intensityVal.GetFloat();
-    //        Light tempLight(lightPos, intensity, origin);
-    //        lights.push_back(tempLight);
-    //    }
-    //}
+    const rapidjson::Value& lightsVal = doc.FindMember("lights")->value;
+    if (!lightsVal.IsNull() && lightsVal.IsArray()) {
+        std::vector<SceneObject*> lightObjects;
+        for (int lightId = 0; lightId < lightsVal.Size(); ++lightId) {
+            const rapidjson::Value& light = lightsVal[lightId];
+            const rapidjson::Value& intensityVal = light.FindMember("intensity")->value;
+            const rapidjson::Value& lightPosVal = light.FindMember("position")->value;
+            assert(!lightPosVal.IsNull() && lightPosVal.IsArray());
+            DirectX::XMFLOAT3 lightPos = loadFloat3(lightPosVal.GetArray());
+            float intensity = intensityVal.GetFloat();
+            PointLight tempLight(lightPos, intensity);
+            LightSceneObject* lightObj = new LightSceneObject(tempLight);
+            lightObjects.push_back(lightObj);
+        }
+        scene->addSceneObjects(lightObjects);
+    }
     return true;
 }
 rapidjson::Document SceneLoader::loadDocument(std::string fileName) {
@@ -163,6 +162,19 @@ DirectX::XMFLOAT3 SceneLoader::loadFloat3(const rapidjson::Value::ConstArray& ar
         static_cast<float>(array[2].GetDouble()),
     };
     return vec;
+}
+void SceneLoader::loadMatrix(const rapidjson::Value::ConstArray& array, DirectX::XMFLOAT3* forward, DirectX::XMFLOAT3* up, DirectX::XMFLOAT3* position)
+{
+    assert(array.Size() == 9);
+    forward->x = static_cast<float>(array[0].GetDouble());
+    forward->y = static_cast<float>(array[1].GetDouble());
+    forward->z = static_cast<float>(array[2].GetDouble());
+    up->x = static_cast<float>(array[3].GetDouble());
+    up->y = static_cast<float>(array[4].GetDouble());
+    up->z = static_cast<float>(array[5].GetDouble());
+    position->x = static_cast<float>(array[6].GetDouble());
+    position->y = static_cast<float>(array[7].GetDouble());
+	position->z = static_cast<float>(array[8].GetDouble());
 }
 Mesh SceneLoader::loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const rapidjson::Value::ConstArray& arrayIndices, const rapidjson::Value& arrayUVs, const Material& material) {
     std::vector<Vertex> vertices;

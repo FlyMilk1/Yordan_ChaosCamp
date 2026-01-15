@@ -45,3 +45,16 @@ std::vector<Vertex> Scene::getMeshVertices(const std::vector<SceneObject*>& obje
 	}
 	return vertices;
 }
+
+const std::vector<PointLight> Scene::getScenePointLights() const
+{
+	//All lights are point lights for now
+	std::vector<PointLight> pointLights;
+	for (auto& obj : sceneObjects) {
+		if (obj->getType() == LIGHT) { 
+			SceneObject* objPtr = obj.get();
+			pointLights.push_back(dynamic_cast<LightSceneObject*>(objPtr)->getPointLight());
+		}
+	}
+	return pointLights;
+}

@@ -103,6 +103,12 @@
     <Filter Include="SnakeApp\Objects\GeometrySceneObject">
       <UniqueIdentifier>{a91a2686-d320-4fe8-9db5-471e2e9147eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SnakeApp\Objects\LightSceneObject">
+      <UniqueIdentifier>{11836ec8-fc8b-4322-8307-46c5091bfbb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXResources\LightPosition">
+      <UniqueIdentifier>{eee976f9-369d-4aa0-9d38-51ba657c7cc8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -173,6 +179,12 @@
     </ClCompile>
     <ClCompile Include="GeometrySceneObject.cpp">
       <Filter>SnakeApp\Objects\GeometrySceneObject</Filter>
+    </ClCompile>
+    <ClCompile Include="LightSceneObject.cpp">
+      <Filter>SnakeApp\Objects\LightSceneObject</Filter>
+    </ClCompile>
+    <ClCompile Include="LightResource.cpp">
+      <Filter>DXResources\LightPosition</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -250,6 +262,15 @@
     </ClInclude>
     <ClInclude Include="GeometrySceneObject.h">
       <Filter>SnakeApp\Objects\GeometrySceneObject</Filter>
+    </ClInclude>
+    <ClInclude Include="LightSceneObject.h">
+      <Filter>SnakeApp\Objects\LightSceneObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="LightResource.h">
+      <Filter>DXResources\LightPosition</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

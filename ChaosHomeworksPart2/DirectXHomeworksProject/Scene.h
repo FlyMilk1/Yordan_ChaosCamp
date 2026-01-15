@@ -2,6 +2,7 @@
 #include "SceneObject.h"
 #include "CameraSceneObject.h"
 #include "GeometrySceneObject.h"
+#include "LightSceneObject.h"
 #include <vector>
 #include <memory>
 #include "Vertex.h"
@@ -40,6 +41,12 @@ public:
 	/// <param name="objects">Vector of geometry scene objects</param>
 	/// <returns>Vector of mesh vertices</returns>
 	static std::vector<Vertex> getMeshVertices(const std::vector<SceneObject*>& objects);
+
+	/// <summary>
+	/// Returns a vector of point lights from the scene
+	/// </summary>
+	/// <returns></returns>
+	const std::vector<PointLight> getScenePointLights() const;
 private:
 	std::vector<std::unique_ptr<SceneObject>> sceneObjects;
 	std::unique_ptr<CameraSceneObject> mainCamera;

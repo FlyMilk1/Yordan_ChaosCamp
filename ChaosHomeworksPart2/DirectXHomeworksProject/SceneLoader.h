@@ -18,6 +18,7 @@ public:
 private:
 	static rapidjson::Document loadDocument(std::string fileName);
 	static DirectX::XMFLOAT3 loadFloat3(const rapidjson::Value::ConstArray& array);
+	static void loadMatrix(const rapidjson::Value::ConstArray& array, DirectX::XMFLOAT3* forward, DirectX::XMFLOAT3* up, DirectX::XMFLOAT3* position);
 	static Mesh loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const rapidjson::Value::ConstArray& arrayIndices, const rapidjson::Value& arrayUVs, const Material& material=Material());
 };
 

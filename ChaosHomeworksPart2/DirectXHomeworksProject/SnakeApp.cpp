@@ -74,6 +74,7 @@ bool SnakeApp::init()
 	renderer.updateSceneVerticesVB(scene.get());
 	DirectX::XMFLOAT3 bgColor = scene->getBackgroundColor();
 	renderer.setBackgroundColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
+	renderer.updateSceneLights(scene.get());
 	return true;
 }
 

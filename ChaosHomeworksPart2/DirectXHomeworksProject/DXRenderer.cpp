@@ -34,6 +34,8 @@ QImage DXRenderer::renderFrame(const FrameData& frameData, const bool& writeToFi
 
 		commandList->SetComputeRootDescriptorTable(0, rtDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+		commandList->SetComputeRoot32BitConstant(2, lightBufferResource->getPointLightsCount(), 0);
+
 		commandList->SetPipelineState1(rtStateObject);
 
 		commandList->DispatchRays(&dispatchRaysDesc);
@@ -468,6 +470,11 @@ void DXRenderer::updateSceneVerticesVB(const Scene* scene)
 	prepareAccelerationStructures();
 }
 
+void DXRenderer::updateSceneLights(const Scene* scene)
+{
+	lightBufferResource->updateLights(scene->getScenePointLights());
+}
+
 void DXRenderer::createVertexBuffer()
 {
 	vertexBuffer->addVerticesToBuffer({
@@ -535,12 +542,15 @@ void DXRenderer::createGlobalRootSignature()
 	uavRange.RegisterSpace = 0;
 	uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+	// SRV range: t0–t2
 	D3D12_DESCRIPTOR_RANGE srvRange = {};
 	srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	srvRange.NumDescriptors = 1;
-	srvRange.BaseShaderRegister = 0;
+	srvRange.NumDescriptors = 3;      // t0, t1, t2
+	srvRange.BaseShaderRegister = 0;  // starts at t0
 	srvRange.RegisterSpace = 0;
-	srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	srvRange.OffsetInDescriptorsFromTableStart =
+		D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 
 	D3D12_DESCRIPTOR_RANGE descriptorRanges[2] = { uavRange, srvRange };
 
@@ -552,11 +562,25 @@ void DXRenderer::createGlobalRootSignature()
 
 	D3D12_ROOT_PARAMETER cameraParam = {};
 	cameraParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	cameraParam.Descriptor.ShaderRegister = 0; // b0
+	cameraParam.Descriptor.RegisterSpace = 0;
+	cameraParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	D3D12_ROOT_PARAMETER rootParameters[2] = { descriptorTableParam, cameraParam };
+
+	D3D12_ROOT_CONSTANTS lightCountConstants = {};
+	lightCountConstants.Num32BitValues = 1;
+	lightCountConstants.ShaderRegister = 1; // b1
+	lightCountConstants.RegisterSpace = 0;
+
+	D3D12_ROOT_PARAMETER lightsCountParam = {};
+	lightsCountParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	lightsCountParam.Constants = lightCountConstants;
+	lightsCountParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	D3D12_ROOT_PARAMETER rootParameters[3] = { descriptorTableParam, cameraParam, lightsCountParam };
 
 	D3D12_ROOT_SIGNATURE_DESC rootSigDesc = {};
-	rootSigDesc.NumParameters = 2;
+	rootSigDesc.NumParameters = 3;
 	rootSigDesc.pParameters = rootParameters;
 	rootSigDesc.NumStaticSamplers = 0;
 	rootSigDesc.pStaticSamplers = nullptr;
@@ -620,7 +644,7 @@ D3D12_STATE_SUBOBJECT DXRenderer::createMissShaderLibSubObject()
 D3D12_STATE_SUBOBJECT DXRenderer::createRayTracingShaderConfigSubObject()
 {
 	rayTracingShaderConfig = D3D12_RAYTRACING_SHADER_CONFIG{};
-	rayTracingShaderConfig.MaxPayloadSizeInBytes = 4 * 4; // RGBA
+	rayTracingShaderConfig.MaxPayloadSizeInBytes = 4 * 4 + sizeof(UINT); // RGBA color + Shadow payload
 	rayTracingShaderConfig.MaxAttributeSizeInBytes = 8;
 
 	D3D12_STATE_SUBOBJECT rayTracingShaderConfigSubObject = {};
@@ -633,7 +657,7 @@ D3D12_STATE_SUBOBJECT DXRenderer::createRayTracingShaderConfigSubObject()
 D3D12_STATE_SUBOBJECT DXRenderer::createPipelineConfigSubObject()
 {
 	rayTracingPipelineConfig = D3D12_RAYTRACING_PIPELINE_CONFIG{};
-	rayTracingPipelineConfig.MaxTraceRecursionDepth = 1;
+	rayTracingPipelineConfig.MaxTraceRecursionDepth = 2;
 
 	D3D12_STATE_SUBOBJECT pipelineConfigSubObject = {};
 	pipelineConfigSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG;
@@ -673,15 +697,48 @@ D3D12_STATE_SUBOBJECT DXRenderer::createCloserHitShaderSubObject()
 	return closestHitShaderLibSubObject;
 }
 
-D3D12_STATE_SUBOBJECT DXRenderer::createHitGroupSubObject()
+D3D12_STATE_SUBOBJECT DXRenderer::createAnyHitShaderSubObject()
+{
+	anyHitShaderBlob = ShaderCompiler::compileShaders(L"ray_tracing_shader.hlsl", L"anyHitShadow", L"lib_6_5");
+
+	anyHitShaderExportDesc = D3D12_EXPORT_DESC{};
+	anyHitShaderExportDesc.Name = L"anyHitShadow";
+	anyHitShaderExportDesc.Flags = D3D12_EXPORT_FLAG_NONE;
+
+	anyHitShaderLibDesc.DXILLibrary.pShaderBytecode = anyHitShaderBlob->GetBufferPointer();
+	anyHitShaderLibDesc.DXILLibrary.BytecodeLength = anyHitShaderBlob->GetBufferSize();
+	anyHitShaderLibDesc.NumExports = 1;
+	anyHitShaderLibDesc.pExports = &anyHitShaderExportDesc;
+
+	D3D12_STATE_SUBOBJECT anyHitShaderLibSubObject = {};
+	anyHitShaderLibSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+	anyHitShaderLibSubObject.pDesc = &anyHitShaderLibDesc;
+
+	return anyHitShaderLibSubObject;
+}
+
+D3D12_STATE_SUBOBJECT DXRenderer::createPrimaryHitGroupSubObject()
 {
 
-	hitGroupDesc.ClosestHitShaderImport = L"closestHit";
-	hitGroupDesc.HitGroupExport = L"HitGroup";
-	hitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
+	PrimaryHitGroupDesc.ClosestHitShaderImport = L"closestHit";
+	PrimaryHitGroupDesc.HitGroupExport = L"HitGroup_Primary";
+	PrimaryHitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
 	D3D12_STATE_SUBOBJECT hitGroupSubObject = {};
 	hitGroupSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
-	hitGroupSubObject.pDesc = &hitGroupDesc;
+	hitGroupSubObject.pDesc = &PrimaryHitGroupDesc;
+	return hitGroupSubObject;
+}
+
+D3D12_STATE_SUBOBJECT DXRenderer::createShadowHitGroupSubObject()
+{
+
+	ShadowHitGroupDesc.ClosestHitShaderImport = nullptr;
+	ShadowHitGroupDesc.AnyHitShaderImport = L"anyHitShadow";
+	ShadowHitGroupDesc.HitGroupExport = L"HitGroup_Shadow";
+	ShadowHitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
+	D3D12_STATE_SUBOBJECT hitGroupSubObject = {};
+	hitGroupSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
+	hitGroupSubObject.pDesc = &ShadowHitGroupDesc;
 	return hitGroupSubObject;
 }
 
@@ -694,16 +751,20 @@ void DXRenderer::createRayTracingPipelineState()
 	D3D12_STATE_SUBOBJECT rayTracingShaderConfigSubObject = createRayTracingShaderConfigSubObject();
 	D3D12_STATE_SUBOBJECT pipelineConfigSubObject = createPipelineConfigSubObject();
 	D3D12_STATE_SUBOBJECT globalRootSignatureSubObject = createGlobalRootSignatureSubObject();
-	D3D12_STATE_SUBOBJECT hitGroupSubObject = createHitGroupSubObject();
+	D3D12_STATE_SUBOBJECT PrimaryHitGroupSubObject = createPrimaryHitGroupSubObject();
+	D3D12_STATE_SUBOBJECT ShadowHitGroupSubObject = createShadowHitGroupSubObject();
+	D3D12_STATE_SUBOBJECT anyHitShaderLibSubObject = createAnyHitShaderSubObject();
 
 	std::vector<D3D12_STATE_SUBOBJECT> subObjects = {
 		rayGenLibSubObject,
 		missShaderLibSubObject,
 		closestHitShaderLibSubObject,
-		hitGroupSubObject,
+		PrimaryHitGroupSubObject,
 		rayTracingShaderConfigSubObject,
 		globalRootSignatureSubObject,
-		pipelineConfigSubObject
+		pipelineConfigSubObject,
+		ShadowHitGroupSubObject,
+		anyHitShaderLibSubObject
 	};
 
 	D3D12_STATE_OBJECT_DESC rtpsoDesc = {};
@@ -726,7 +787,8 @@ void DXRenderer::createShaderBindingTable(const QLabel* frame)
 
 	void* rayGenID = rtStateObjectProps->GetShaderIdentifier(L"rayGen");
 	void* missID = rtStateObjectProps->GetShaderIdentifier(L"miss");
-	void* hitGroupID = rtStateObjectProps->GetShaderIdentifier(L"HitGroup");
+	void* hitGroupID = rtStateObjectProps->GetShaderIdentifier(L"HitGroup_Primary");
+	void* shadowHitGroupID = rtStateObjectProps->GetShaderIdentifier(L"HitGroup_Shadow");
 
 	const UINT shaderIDSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 	const UINT recordSize = alignedSize(shaderIDSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
@@ -734,17 +796,18 @@ void DXRenderer::createShaderBindingTable(const QLabel* frame)
 	UINT rayGenOffset = 0;
 	UINT missOffset = alignedSize(rayGenOffset + recordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 	UINT hitGroupOffset = alignedSize(missOffset + recordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+	UINT shadowHitGroupOffset = alignedSize(hitGroupOffset + recordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 
-	const UINT sbtSize = alignedSize(recordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT) * 3;
+	const UINT sbtSize = alignedSize(recordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT) * 4;
 
 	sbtUploadHeap = std::make_unique<SBTUploadHeap>(device, sbtSize);
 	sbtDefaultHeap = std::make_unique<SBTDefaultHeap>(device, sbtSize);
-	copySBTDataToUploadHeap(rayGenOffset, missOffset, hitGroupOffset, rayGenID, missID, hitGroupID);
+	copySBTDataToUploadHeap(rayGenOffset, missOffset, hitGroupOffset, shadowHitGroupOffset, rayGenID, missID, hitGroupID, shadowHitGroupID);
 	copySBTDataToDefaultHeap();
-	prepareDispatchRaysDesc(recordSize, rayGenOffset, missOffset, hitGroupOffset, frame);
+	prepareDispatchRaysDesc(recordSize, rayGenOffset, missOffset, hitGroupOffset, shadowHitGroupOffset, frame);
 }
 
-void DXRenderer::copySBTDataToUploadHeap(const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, void* rayGenID, void* missID, void* hitGroupID)
+void DXRenderer::copySBTDataToUploadHeap(const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, const UINT shadowHitGroupOffset, void* rayGenID, void* missID, void* hitGroupID, void* shadowHitGroupID)
 {
 	uint8_t* pData = nullptr;
 	sbtUploadHeap->getD3D12Resource()->Map(0, nullptr, (void**)&pData);
@@ -752,7 +815,8 @@ void DXRenderer::copySBTDataToUploadHeap(const UINT rayGenOffset, const UINT mis
 	memcpy(pData + rayGenOffset, rayGenID, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 	memcpy(pData + missOffset, missID, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
 	memcpy(pData + hitGroupOffset, hitGroupID, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-	
+	memcpy(pData + shadowHitGroupOffset, shadowHitGroupID, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
 	sbtUploadHeap->getD3D12Resource()->Unmap(0, nullptr);
 }
 
@@ -778,7 +842,7 @@ void DXRenderer::copySBTDataToDefaultHeap()
 	waitForGPURenderFrame();
 }
 
-void DXRenderer::prepareDispatchRaysDesc(const UINT recordSize, const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, const QLabel* frame)
+void DXRenderer::prepareDispatchRaysDesc(const UINT recordSize, const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, const UINT shadowHitGroupOffset, const QLabel* frame)
 {
 	UINT64 baseAddress = sbtDefaultHeap->getD3D12Resource()->GetGPUVirtualAddress();
 	dispatchRaysDesc.Width = frame->width();
@@ -793,7 +857,7 @@ void DXRenderer::prepareDispatchRaysDesc(const UINT recordSize, const UINT rayGe
 	dispatchRaysDesc.MissShaderTable.StrideInBytes = recordSize;
 
 	dispatchRaysDesc.HitGroupTable.StartAddress = baseAddress + hitGroupOffset;
-	dispatchRaysDesc.HitGroupTable.SizeInBytes = recordSize;
+	dispatchRaysDesc.HitGroupTable.SizeInBytes = recordSize * 2;
 	dispatchRaysDesc.HitGroupTable.StrideInBytes = recordSize;
 
 	dispatchRaysDesc.CallableShaderTable = {};
@@ -961,7 +1025,7 @@ void DXRenderer::buildTLAS()
 void DXRenderer::createDescriptorsForRTAccelerationStructures()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-	desc.NumDescriptors = 2;
+	desc.NumDescriptors = 4; // u0, t0, t1, t2
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -971,45 +1035,81 @@ void DXRenderer::createDescriptorsForRTAccelerationStructures()
 	);
 	assert(SUCCEEDED(hr));
 
-	UINT incrementSize =
+	UINT increment =
 		device->GetDescriptorHandleIncrementSize(
-			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-		);
+			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandle =
+	D3D12_CPU_DESCRIPTOR_HANDLE handle =
 		rtDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	// u0 — output texture
+	// u0 — output UAV
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uav = {};
-	uav.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	uav.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	uav.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	device->CreateUnorderedAccessView(
 		outputTexture->getD3D12Resource(),
 		nullptr,
 		&uav,
-		cpuDescHandle
+		handle
 	);
 
-	// t0 — TLAS
-	cpuDescHandle.ptr += incrementSize;
+	// t0 — TLAS SRV
+	handle.ptr += increment;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srv = {};
 	srv.ViewDimension =
 		D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+	srv.Shader4ComponentMapping =
+		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srv.RaytracingAccelerationStructure.Location =
 		TLASdestAccelerationStructureData
 		->getD3D12Resource()
 		->GetGPUVirtualAddress();
+
+	device->CreateShaderResourceView(nullptr, &srv, handle);
+
+	// t1 — vertex buffer SRV
+	handle.ptr += increment;
+
+	srv = {};
+	srv.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	srv.Shader4ComponentMapping =
 		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srv.Buffer.FirstElement = 0;
+	srv.Buffer.NumElements = vertexBuffer->getVerticesCount();
+	srv.Buffer.StructureByteStride = sizeof(Vertex);
+	srv.Format = DXGI_FORMAT_UNKNOWN;
 
-	device->CreateShaderResourceView(nullptr, &srv, cpuDescHandle);
+	device->CreateShaderResourceView(
+		vertexBuffer->getD3D12Resource(),
+		&srv,
+		handle
+	);
+
+	// t2 — lights buffer SRV
+	handle.ptr += increment;
+
+	srv = {};
+	srv.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	srv.Shader4ComponentMapping =
+		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srv.Buffer.FirstElement = 0;
+	srv.Buffer.NumElements = lightBufferResource->getPointLightsCount();
+	srv.Buffer.StructureByteStride = sizeof(PointLight);
+	srv.Format = DXGI_FORMAT_UNKNOWN;
+
+	device->CreateShaderResourceView(
+		lightBufferResource->getD3D12Resource(),
+		&srv,
+		handle
+	);
 }
 
 void DXRenderer::intializeSceneVariables()
 {
 	cameraBuffer = std::make_unique<CameraBufferResource>(device);
+	lightBufferResource = std::make_unique<LightResource>(device);
 }
 
 void DXRenderer::updateCameraBuffer(const CameraCB& cameraBuffer)

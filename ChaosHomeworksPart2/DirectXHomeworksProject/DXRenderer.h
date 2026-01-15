@@ -26,6 +26,7 @@
 #include "AccelerationStructureData.h"
 #include <CameraBufferResource.h>
 #include "Scene.h"
+#include "LightResource.h"
 
 #include "CompiledShaders/ConstColor.hlsl.h"
 #include "CompiledShaders/ConstColorVS.hlsl.h"
@@ -89,6 +90,12 @@ public: //Public Functions
 	/// Updates the vertex buffer with the scene's vertices
 	/// </summary>
 	void updateSceneVerticesVB(const Scene* scene);
+
+	/// <summary>
+	/// Updates the lights in the scene
+	/// </summary>
+	/// <param name="scene">Pointer to the scene</param>
+	void updateSceneLights(const Scene* scene);
 
 	/// <summary>
 	/// Sets the background color of the renderer
@@ -237,10 +244,22 @@ private: //Private Functions
 	D3D12_STATE_SUBOBJECT createCloserHitShaderSubObject();
 
 	/// <summary>
+	/// Creates a D3D12_STATE_SUBOBJECT configured for an any hit shader used in a D3D12 raytracing pipeline.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT that represents the configured any hit shader subobject.</returns>
+	D3D12_STATE_SUBOBJECT createAnyHitShaderSubObject();
+
+	/// <summary>
 	/// Creates a D3D12_STATE_SUBOBJECT configured as a hit group subobject for a Direct3D 12 raytracing pipeline.
 	/// </summary>
 	/// <returns>A D3D12_STATE_SUBOBJECT representing the hit group subobject.</returns>
-	D3D12_STATE_SUBOBJECT createHitGroupSubObject();
+	D3D12_STATE_SUBOBJECT createPrimaryHitGroupSubObject();
+
+	/// <summary>
+	/// Creates a D3D12_STATE_SUBOBJECT configured as a shadow hit group subobject for a Direct3D 12 raytracing pipeline.
+	/// </summary>
+	/// <returns>A D3D12_STATE_SUBOBJECT representing the shadow hit group subobject.</returns>
+	D3D12_STATE_SUBOBJECT createShadowHitGroupSubObject();
 
 	/// <summary>
 	/// Creates and initializes the ray tracing pipeline state used for GPU ray tracing operations.
@@ -261,7 +280,8 @@ private: //Private Functions
 	/// <param name="rayGenID">Pointer to the ray-generation shader record data or identifier to copy to the upload heap.</param>
 	/// <param name="missID">Pointer to the miss shader record data or identifier to copy to the upload heap.</param>
 	/// <param name="hitGroupID">Pointer to the hit-group shader record data or identifier to copy to the upload heap.</param>
-	void copySBTDataToUploadHeap(const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, void* rayGenID, void* missID, void* hitGroupID);
+	/// <param name="shadowHitGroupID">Pointer to the shadow hit-group shader record data or identifier to copy to the upload heap.</param>
+	void copySBTDataToUploadHeap(const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, const UINT shadowHitGroupOffset, void* rayGenID, void* missID, void* hitGroupID, void* shadowHitGroupID);
 
 	/// <summary>
 	/// Copies SBT (Shader Binding Table) data to the default heap.
@@ -276,7 +296,8 @@ private: //Private Functions
 	/// <param name="missOffset">Byte offset into the shader table where the miss records begin.</param>
 	/// <param name="hitGroupOffset">Byte offset into the shader table where the hit-group records begin.</param>
 	/// <param name="frame">Pointer to a QLabel that identifies or provides frame-related metadata/context for which the descriptor is prepared.</param>
-	void prepareDispatchRaysDesc(const UINT recordSize, const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, const QLabel* frame);
+	/// <param name="shadowHitGroupOffset">Byte offset into the shader table where the shadow hit-group records begin.</param>
+	void prepareDispatchRaysDesc(const UINT recordSize, const UINT rayGenOffset, const UINT missOffset, const UINT hitGroupOffset, const UINT shadowHitGroupOffset, const QLabel* frame);
 
 	/// <summary>
 	/// Prepares DirectX for Ray Tracing
@@ -380,7 +401,12 @@ private:
 	D3D12_EXPORT_DESC closestHitShaderExportDesc; //Export description for the closest hit shader
 	D3D12_DXIL_LIBRARY_DESC closestHitShaderLibDesc; //DXIL library description for the closest hit shader
 
-	D3D12_HIT_GROUP_DESC hitGroupDesc = {};//Hit group description
+	ID3DBlobPtr anyHitShaderBlob; //Blob for the any hit shader
+	D3D12_EXPORT_DESC anyHitShaderExportDesc; //Export description for the any hit shader
+	D3D12_DXIL_LIBRARY_DESC anyHitShaderLibDesc; //DXIL library description for the any hit shader
+
+	D3D12_HIT_GROUP_DESC PrimaryHitGroupDesc = {};//Primary Hit group description
+	D3D12_HIT_GROUP_DESC ShadowHitGroupDesc = {};//Shadow Hit group description
 
 	D3D12_RAYTRACING_SHADER_CONFIG rayTracingShaderConfig; //Ray tracing shader config
 	D3D12_RAYTRACING_PIPELINE_CONFIG rayTracingPipelineConfig; //Ray tracing pipeline config
@@ -408,5 +434,6 @@ private:
 
 private: //Scene variables
 	std::unique_ptr<CameraBufferResource> cameraBuffer; //Camera buffer resource
+	std::unique_ptr<LightResource> lightBufferResource; //Light buffer resource
 	FLOAT clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f }; //Clear color for the render target
 };

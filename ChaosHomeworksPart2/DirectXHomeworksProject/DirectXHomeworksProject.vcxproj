@@ -173,6 +173,8 @@
     <ClCompile Include="DXResource.cpp" />
     <ClCompile Include="GeometrySceneObject.cpp" />
     <ClCompile Include="GPUDefaultHeap.cpp" />
+    <ClCompile Include="LightResource.cpp" />
+    <ClCompile Include="LightSceneObject.cpp" />
     <ClCompile Include="Movement.cpp" />
     <ClCompile Include="OutputTexture.cpp" />
     <ClCompile Include="SBTDefaultHeap.cpp" />
@@ -201,6 +203,9 @@
     <ClInclude Include="GeometrySceneObject.h" />
     <ClInclude Include="GPUDefaultHeap.h" />
     <ClInclude Include="GPUReadbackHeapResource.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="LightResource.h" />
+    <ClInclude Include="LightSceneObject.h" />
     <ClInclude Include="Movement.h" />
     <ClInclude Include="MovementInput.h" />
     <ClInclude Include="OutputTexture.h" />
