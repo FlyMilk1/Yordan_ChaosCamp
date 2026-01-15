@@ -59,14 +59,21 @@ public://Public functions
 	/// Performs checks on move-related input, handling validation or processing as needed.
 	/// </summary>
 	void checkMoveInput();
+
+	/// <summary>
+	/// Called when scene load button is pressed
+	/// </summary>
+	void onSceneLoaded();
 signals:
 	void viewportDrag(const QPoint& deltaFromStart,
 		const QPoint& deltaFromLast);
     void switchRenderingModeSignal();
 	void moveSignal(const MovementInput& input);
+	void loadScene(const std::string sceneName);
 
 private:
 	bool dragging = false;
+	bool movementEnabled = false;
 	QPoint startPos;
 	QPoint lastPos;
 	QPoint deltaFromStart;

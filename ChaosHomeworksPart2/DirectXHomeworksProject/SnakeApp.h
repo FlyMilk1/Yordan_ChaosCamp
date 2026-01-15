@@ -50,6 +50,12 @@ private slots:
 	/// </summary>
 	void switchRenderingMode();
 
+	/// <summary>
+	/// Initializes the scene
+	/// </summary>
+	/// <param name="sceneName">Path to the scene from the .exe</param>
+	void initScene(const std::string sceneName);
+
 private://Variables
 	UINT frameIndex=0; // Index of current frame
 	UINT fps = 0; //Frames per second

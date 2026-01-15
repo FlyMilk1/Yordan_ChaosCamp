@@ -31,6 +31,17 @@ void SnakeApp::switchRenderingMode()
 	fpsTimer->start(1'000);
 }
 
+void SnakeApp::initScene(const std::string sceneName)
+{
+	scene = std::make_unique<Scene>();
+	scene->addSceneObjects({ camera.get() });
+	SceneLoader::loadScene(sceneName, scene.get());
+	renderer.updateSceneVerticesVB(scene.get());
+	DirectX::XMFLOAT3 bgColor = scene->getBackgroundColor();
+	renderer.setBackgroundColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
+	renderer.updateSceneLights(scene.get());
+}
+
 bool SnakeApp::init()
 {
 	if (false == initWindow()) {
@@ -68,13 +79,10 @@ bool SnakeApp::init()
 	QObject::connect(mainWindow, &MainWindow::moveSignal, [this](const MovementInput& input) {
 		this->movement->updatePosition(input);
 		});
+
+	QObject::connect(mainWindow->ui.pushButton, &QPushButton::clicked, mainWindow, &MainWindow::onSceneLoaded);
+	QObject::connect(mainWindow, &MainWindow::loadScene, this, &SnakeApp::initScene);
 	
-	scene = std::make_unique<Scene>();
-	SceneLoader::loadScene("scene5.crtscene", scene.get());
-	renderer.updateSceneVerticesVB(scene.get());
-	DirectX::XMFLOAT3 bgColor = scene->getBackgroundColor();
-	renderer.setBackgroundColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
-	renderer.updateSceneLights(scene.get());
 	return true;
 }
 

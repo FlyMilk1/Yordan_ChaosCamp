@@ -117,13 +117,13 @@ bool SceneLoader::loadScene(const std::string& filePath, Scene* scene)
     //Camera
     const rapidjson::Value& cameraVal = doc.FindMember("camera")->value;
     if (!cameraVal.IsNull() && cameraVal.IsObject()) {
-        const rapidjson::Value& matrixVal = cameraVal.FindMember("matrix")->value;
-        assert(!matrixVal.IsNull() && matrixVal.IsArray());
+        const rapidjson::Value& rotationVal = cameraVal.FindMember("rotation")->value;
+        assert(!rotationVal.IsNull() && rotationVal.IsArray());
         const rapidjson::Value& positionVal = cameraVal.FindMember("position")->value;
         assert(!positionVal.IsNull() && positionVal.IsArray());
-	    CameraSceneObject* camera = scene->getMainCamera();
-	    //camera->setRotation(loadFloat3(matrixVal.GetArray()));
-        //camera->setPosition(loadFloat3(positionVal.GetArray()));
+        CameraSceneObject* mainCamera = scene->getMainCamera();
+        mainCamera->setPosition(loadFloat3(positionVal.GetArray()));
+        mainCamera->setRotation(loadFloat3(rotationVal.GetArray()));
     }
     //Lights
     const rapidjson::Value& lightsVal = doc.FindMember("lights")->value;
@@ -162,19 +162,6 @@ DirectX::XMFLOAT3 SceneLoader::loadFloat3(const rapidjson::Value::ConstArray& ar
         static_cast<float>(array[2].GetDouble()),
     };
     return vec;
-}
-void SceneLoader::loadMatrix(const rapidjson::Value::ConstArray& array, DirectX::XMFLOAT3* forward, DirectX::XMFLOAT3* up, DirectX::XMFLOAT3* position)
-{
-    assert(array.Size() == 9);
-    forward->x = static_cast<float>(array[0].GetDouble());
-    forward->y = static_cast<float>(array[1].GetDouble());
-    forward->z = static_cast<float>(array[2].GetDouble());
-    up->x = static_cast<float>(array[3].GetDouble());
-    up->y = static_cast<float>(array[4].GetDouble());
-    up->z = static_cast<float>(array[5].GetDouble());
-    position->x = static_cast<float>(array[6].GetDouble());
-    position->y = static_cast<float>(array[7].GetDouble());
-	position->z = static_cast<float>(array[8].GetDouble());
 }
 Mesh SceneLoader::loadMesh(const rapidjson::Value::ConstArray& arrayVertices, const rapidjson::Value::ConstArray& arrayIndices, const rapidjson::Value& arrayUVs, const Material& material) {
     std::vector<Vertex> vertices;

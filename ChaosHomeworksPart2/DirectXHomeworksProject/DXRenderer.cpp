@@ -478,9 +478,9 @@ void DXRenderer::updateSceneLights(const Scene* scene)
 void DXRenderer::createVertexBuffer()
 {
 	vertexBuffer->addVerticesToBuffer({
-	{0.0, 0.5, 0.0},
-	{0.5, -0.5, 0.0},
-	{-0.5, -0.5, 0.0}
+	{0.0, 0.0, 0.0},
+	{0.0, 0.0, 0.0},
+	{0.0, 0.0, 0.0}
 		});
 	vertexBuffer->updateTriangles();
 	gpuDefaultHeap = std::make_unique<GPUDefaultHeap>(device, vertexBuffer->getVerticesCount());
@@ -878,7 +878,6 @@ void DXRenderer::prepareForRasterization(const QLabel* frame)
 	createRootSignature();
 	createPipelineState();
 	createViewport(frame);
-
 }
 
 void DXRenderer::describeTriangles()
